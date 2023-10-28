@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "jfiapp",
+    "slug": "jfiapp",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
