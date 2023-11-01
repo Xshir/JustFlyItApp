@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image, Platform, TextInput, Button, Keyboard } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity, Image, Button, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as ImagePickerExpo from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
 
@@ -12,22 +13,27 @@ function LoginScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username === 'Admin' && password === 'password1234') {
-      navigation.navigate('Main'); // Navigate to the main content after successful login
-      console.log('Login successful');
+      // Store the user's login status in AsyncStorage
+      await AsyncStorage.setItem('isLoggedIn', 'true');
+      navigation.navigate('Main'); // Navigate to the main content after a successful login
     } else {
       setError('Incorrect username or password');
     }
-  };
+  }
 
-  // Handle login on Enter key press
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleLogin();
-      Keyboard.dismiss();
+  useEffect(() => {
+    // Check if the user is already logged in
+    const checkLoggedIn = async () => {
+      const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+      if (isLoggedIn === 'true') {
+        navigation.navigate('Main');
+      }
     }
-  };
+
+    checkLoggedIn();
+  }, [navigation]);
 
   return (
     <View style={styles.loginForm}>
@@ -42,7 +48,11 @@ function LoginScreen({ navigation }) {
         secureTextEntry={!showPassword}
         value={password}
         onChangeText={(text) => setPassword(text)}
-        onKeyPress={handleKeyPress} // Add the onKeyPress event
+        onKeyPress={(e) => {
+          if (e.nativeEvent.key === 'Enter') {
+            handleLogin();
+          }
+        }}
         style={styles.input}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -52,7 +62,7 @@ function LoginScreen({ navigation }) {
   );
 }
 
-function MainScreen() {
+function MainScreen({ navigation }) {
   const [image, setImage] = useState(null);
   const [activeTab, setActiveTab] = useState(1);
 
@@ -68,49 +78,57 @@ function MainScreen() {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setImage(result.uri);
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
     }
+  };
+
+  const handleSignOut = async () => {
+    // Remove the user's login status from AsyncStorage
+    await AsyncStorage.removeItem('isLoggedIn');
+    navigation.navigate('Login');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.sidebar}>
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 1 ? styles.activeTab : null,
-          ]}
-          onPress={() => handleTabClick(1)}
-        >
-          <Text style={styles.tabText}>Tab 1</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 2 ? styles.activeTab : null,
-          ]}
-          onPress={() => handleTabClick(2)}
-        >
-          <Text style={styles.tabText}>Tab 2</Text>
-        </TouchableOpacity>
+        <View style={styles.tabGroup}>
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === 1 ? styles.activeTab : null,
+            ]}
+            onPress={() => handleTabClick(1)}
+          >
+            <Text style={styles.tabText}>Tab 1</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === 2 ? styles.activeTab : null,
+            ]}
+            onPress={() => handleTabClick(2)}
+          >
+            <Text style={styles.tabText}>Tab 2</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.signOutButton}>
+          <Button title="Sign Out" onPress={handleSignOut} />
+        </View>
       </View>
       <View style={styles.content}>
         {activeTab === 1 && (
           <TouchableOpacity onPress={handleImageSelect}>
             <View style={styles.selectImageContainer}>
-              <Text style={styles.selectImageText}>Select Image from Gallery</Text>
+              <Button title="Select Image" onPress={handleImageSelect} color="#007acc" />
             </View>
           </TouchableOpacity>
         )}
         {activeTab === 2 && (
           image ? (
-            <Image
-              source={{ uri: image }}
-              style={{ width: 200, height: 200 }}
-            />
+            <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
           ) : (
-            <Text>No image selected</Text>
+            <Text style={{ color: 'white' }}>No image selected</Text>
           )
         )}
       </View>
@@ -128,10 +146,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'teal', // Teal background for the login page
+    backgroundColor: 'teal',
   },
   input: {
-    backgroundColor: 'white', // White background for input fields
+    backgroundColor: 'white',
     marginBottom: 10,
     padding: 10,
   },
@@ -141,7 +159,6 @@ const styles = StyleSheet.create({
   },
   tab: {
     padding: 10,
-    
     borderBottomColor: '#555',
     borderBottomWidth: 1,
   },
@@ -149,14 +166,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#555',
   },
   tabText: {
-    color: '#fff',
+    color: 'white', // Set the text color to white
   },
   selectImageContainer: {
     borderBottomWidth: 1,
     borderBottomColor: 'black',
-  },
-  selectImageText: {
-    color: 'black',
   },
   sidebar: {
     flex: 1,
@@ -167,6 +181,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 3,
     padding: 20,
+    backgroundColor: 'black',
+  },
+  signOutButton: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  tabGroup: {
+    marginBottom: 20,
   },
 });
 
@@ -188,12 +210,12 @@ function App() {
           name="Main"
           component={MainScreen}
           options={{
-            headerShown: false, // Hide the header for the MainScreen
+            headerShown: false,
           }}
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
-} 
+}
 
 export default App;
