@@ -3,6 +3,7 @@
     "name": "jfiapp",
     "slug": "jfiapp",
     "version": "1.0.0",
+    "icon": "./JFITransparent.jpg",
     "assetBundlePatterns": [
       "**/*"
     ],
