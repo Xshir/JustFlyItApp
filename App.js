@@ -113,26 +113,32 @@ function MainScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={styles.signOutButton}>
-          <Button title="Sign Out" onPress={handleSignOut} />
+          <CustomButton title="Sign Out" onPress={handleSignOut} textColor="black" />
         </View>
       </View>
       <View style={styles.content}>
         {activeTab === 1 && (
           <TouchableOpacity onPress={handleImageSelect}>
             <View style={styles.selectImageContainer}>
-              <Button title="Select Image" onPress={handleImageSelect} color="#007acc" />
+              <Button title="Select Image" onPress={handleImageSelect} color="black" />
             </View>
           </TouchableOpacity>
         )}
         {activeTab === 2 && (
-          image ? (
-            <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
-          ) : (
-            <Text style={{ color: 'white' }}>No image selected</Text>
-          )
+          // ...
         )}
       </View>
     </View>
+  );
+}
+
+function CustomButton({ title, onPress, textColor }) {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.customButton}>
+        <Text style={{ color: textColor }}>{title}</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -146,7 +152,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'teal',
+    backgroundColor: '#0cbfb4',
   },
   input: {
     backgroundColor: 'white',
@@ -166,7 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#555',
   },
   tabText: {
-    color: 'white', // Set the text color to white
+    color: 'white',
   },
   selectImageContainer: {
     borderBottomWidth: 1,
@@ -181,7 +187,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 3,
     padding: 20,
-    backgroundColor: 'black',
+    backgroundColor: '#0cbfb4',
   },
   signOutButton: {
     flex: 1,
@@ -189,6 +195,11 @@ const styles = StyleSheet.create({
   },
   tabGroup: {
     marginBottom: 20,
+  },
+  customButton: {
+    backgroundColor: 'gold',
+    padding: 10,
+    borderRadius: 5,
   },
 });
 
