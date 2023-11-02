@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Just Fly It",
-    "slug": "Just Fly It",
+    "slug": "jfiapp",
     "version": "1.0.0",
     "icon": "./android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
     "assetBundlePatterns": [
