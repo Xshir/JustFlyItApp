@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image, Button, TextInput } from 'react-native';
+import { View, StyleSheet, Text, Image, Button, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as ImagePickerExpo from 'expo-image-picker';
@@ -37,6 +37,7 @@ function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.loginForm}>
+      <Image source={require('./JFITransparent.png')} style={styles.logoImage} />
       <TextInput
         placeholder="Username"
         value={username}
@@ -56,8 +57,12 @@ function LoginScreen({ navigation }) {
         style={styles.input}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <Button title={showPassword ? 'Hide Password' : 'Show Password'} onPress={() => setShowPassword(!showPassword)} />
-      <Button title="Login" onPress={handleLogin} />
+      <View style={styles.buttonContainer}>
+        <Button title="Show Password" onPress={() => setShowPassword(!showPassword)} style={styles.button} color="black" />
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button title="Login" onPress={handleLogin} style={styles.button} color="black" />
+      </View>
     </View>
   );
 }
@@ -74,7 +79,7 @@ function MainScreen({ navigation }) {
     const result = await ImagePickerExpo.launchImageLibraryAsync({
       mediaTypes: ImagePickerExpo.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [4, 3], // Ensure that the image aspect ratio matches the container
       quality: 1,
     });
 
@@ -87,7 +92,7 @@ function MainScreen({ navigation }) {
     // Remove the user's login status from AsyncStorage
     await AsyncStorage.removeItem('isLoggedIn');
     navigation.navigate('Login');
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -113,32 +118,30 @@ function MainScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={styles.signOutButton}>
-          <CustomButton title="Sign Out" onPress={handleSignOut} textColor="black" />
+          <Button
+            title="Sign Out"
+            onPress={handleSignOut}
+            color="gold"
+          />
         </View>
       </View>
       <View style={styles.content}>
         {activeTab === 1 && (
           <TouchableOpacity onPress={handleImageSelect}>
             <View style={styles.selectImageContainer}>
-              <Button title="Select Image" onPress={handleImageSelect} color="black" />
+              <Button title="Select Image" onPress={handleImageSelect} />
             </View>
           </TouchableOpacity>
         )}
         {activeTab === 2 && (
-          // ...
+          image ? (
+            <Image source={{ uri: image }} style={{ flex: 1, aspectRatio: 4 / 3 }} />
+          ) : (
+            <Text style={{ color: 'white' }}>No image selected</Text>
+          )
         )}
       </View>
     </View>
-  );
-}
-
-function CustomButton({ title, onPress, textColor }) {
-  return (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.customButton}>
-        <Text style={{ color: textColor }}>{title}</Text>
-      </View>
-    </TouchableOpacity>
   );
 }
 
@@ -193,16 +196,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
   },
-  tabGroup: {
+  logoImage: {
+    width: '40%',
+    height: 300,
+    resizeMode: 'contain',
     marginBottom: 20,
   },
-  customButton: {
-    backgroundColor: 'gold',
-    padding: 10,
-    borderRadius: 5,
-  },
-});
+  buttonContainer: {
+    marginBottom: 5,
+    justifyContent: 'space-evenly',
+    
 
+  },
+    showPasswordButton: {
+    width: '30%',
+    borderRadius: 20, // Adjust the radius as needed
+  },
+  loginButton: {
+    width: '40%',
+    borderRadius: 20, // Adjust the radius as needed
+  },
+
+});
 function App() {
   return (
     <NavigationContainer>
