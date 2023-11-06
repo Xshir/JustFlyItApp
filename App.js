@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Image, Button, TextInput, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, Image, Button, TextInput, TouchableOpacity, ScrollView, FlatList } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import * as ImagePickerExpo from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
@@ -17,7 +16,7 @@ function LoginScreen({ navigation }) {
     if (username === 'Admin' && password === 'password1234') {
       // Store the user's login status in AsyncStorage
       await AsyncStorage.setItem('isLoggedIn', 'true');
-      navigation.navigate('Main'); // Navigate to the main content after a successful login
+      navigation.navigate('Home'); // Navigate to the home page after a successful login
     } else {
       setError('Incorrect username or password');
     }
@@ -28,7 +27,7 @@ function LoginScreen({ navigation }) {
     const checkLoggedIn = async () => {
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
       if (isLoggedIn === 'true') {
-        navigation.navigate('Main');
+        navigation.navigate('Home');
       }
     }
 
@@ -58,36 +57,16 @@ function LoginScreen({ navigation }) {
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
       <View style={styles.buttonContainer}>
-        <Button title="Show Password" onPress={() => setShowPassword(!showPassword)} style={styles.button} color="black" />
+        <Button title="Show Password" onPress={() => setShowPassword(!showPassword)} style={styles.showPasswordButton} color="black" />
       </View>
       <View style={styles.buttonContainer}>
-        <Button title="Login" onPress={handleLogin} style={styles.button} color="black" />
+        <Button title="Login" onPress={handleLogin} style={styles.loginButton} color="black" />
       </View>
     </View>
   );
 }
 
-function MainScreen({ navigation }) {
-  const [image, setImage] = useState(null);
-  const [activeTab, setActiveTab] = useState(1);
-
-  const handleTabClick = (tabNumber) => {
-    setActiveTab(tabNumber);
-  };
-
-  const handleImageSelect = async () => {
-    const result = await ImagePickerExpo.launchImageLibraryAsync({
-      mediaTypes: ImagePickerExpo.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3], // Ensure that the image aspect ratio matches the container
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
+function HomeScreen({ navigation }) {
   const handleSignOut = async () => {
     // Remove the user's login status from AsyncStorage
     await AsyncStorage.removeItem('isLoggedIn');
@@ -95,61 +74,61 @@ function MainScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.sidebar}>
-        <View style={styles.tabGroup}>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 1 ? styles.activeTab : null,
-            ]}
-            onPress={() => handleTabClick(1)}
-          >
-            <Text style={styles.tabText}>Tab 1</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 2 ? styles.activeTab : null,
-            ]}
-            onPress={() => handleTabClick(2)}
-          >
-            <Text style={styles.tabText}>Tab 2</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.signOutButton}>
-          <Button
-            title="Sign Out"
-            onPress={handleSignOut}
-            color="gold"
-          />
-        </View>
+    <View style={styles.homeContainer}>
+      <View style={styles.buttonContainer}>
+        <Button title="Backend" onPress={() => navigation.navigate('Backend')} color="black" />
       </View>
-      <View style={styles.content}>
-        {activeTab === 1 && (
-          <TouchableOpacity onPress={handleImageSelect}>
-            <View style={styles.selectImageContainer}>
-              <Button title="Select Image" onPress={handleImageSelect} />
-            </View>
-          </TouchableOpacity>
-        )}
-        {activeTab === 2 && (
-          image ? (
-            <Image source={{ uri: image }} style={{ flex: 1, aspectRatio: 4 / 3 }} />
-          ) : (
-            <Text style={{ color: 'white' }}>No image selected</Text>
-          )
-        )}
+      <View style={styles.signOutButton}>
+        <Button title="Sign Out" onPress={handleSignOut} color="gold" />
       </View>
     </View>
   );
 }
 
+function BackendScreen({ navigation }) {
+  return (
+    <View style={styles.container}>
+      <ScrollView style={styles.sidebar}>
+        <SchoolSidebar navigation={navigation} />
+      </ScrollView>
+      <View style={styles.content}>
+        <Text style={styles.schoolText}>Select a school to view details</Text>
+      </View>
+    </View>
+  );
+}
+
+function SchoolSidebar({ navigation }) {
+  const schools = Array.from({ length: 50 }, (_, index) => `School ${index + 1}`);
+
+  return (
+    <FlatList
+      data={schools}
+      keyExtractor={(item) => item}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          style={styles.schoolItem}
+          onPress={() => {
+            navigation.navigate('SchoolDetails', { school: item });
+          }}
+        >
+          <Text style={styles.schoolText}>{item}</Text>
+        </TouchableOpacity>
+      )}
+    />
+  );
+}
+
+function SchoolDetailsScreen({ route }) {
+  return (
+    <View style={styles.content}>
+      <Text style={styles.schoolText}>{route.params.school}</Text>
+      {/* Add additional content for school details, including packing lists, here */}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-  },
   loginForm: {
     flex: 1,
     justifyContent: 'center',
@@ -166,35 +145,50 @@ const styles = StyleSheet.create({
     color: 'orange',
     marginBottom: 10,
   },
-  tab: {
-    padding: 10,
-    borderBottomColor: '#555',
-    borderBottomWidth: 1,
+  showPasswordButton: {
+    width: '30%',
+    borderRadius: 20,
   },
-  activeTab: {
-    backgroundColor: '#555',
+  loginButton: {
+    width: '40%',
+    borderRadius: 20,
   },
-  tabText: {
-    color: 'white',
+  buttonContainer: {
+    marginBottom: 5,
+    justifyContent: 'space-evenly',
   },
-  selectImageContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'black',
+  homeContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0cbfb4',
+  },
+  signOutButton: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+  },
+  container: {
+    flex: 1,
+    flexDirection: 'row',
   },
   sidebar: {
     flex: 1,
-    width: 200,
     backgroundColor: '#333',
-    padding: 20,
+    height: '100vh', // Set sidebar height to the viewport height
   },
   content: {
     flex: 3,
     padding: 20,
     backgroundColor: '#0cbfb4',
   },
-  signOutButton: {
-    flex: 1,
-    justifyContent: 'flex-end',
+  schoolItem: {
+    padding: 10,
+    borderBottomColor: '#555',
+    borderBottomWidth: 1,
+  },
+  schoolText: {
+    color: 'white',
   },
   logoImage: {
     width: '40%',
@@ -202,22 +196,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginBottom: 20,
   },
-  buttonContainer: {
-    marginBottom: 5,
-    justifyContent: 'space-evenly',
-    
-
-  },
-    showPasswordButton: {
-    width: '30%',
-    borderRadius: 20, // Adjust the radius as needed
-  },
-  loginButton: {
-    width: '40%',
-    borderRadius: 20, // Adjust the radius as needed
-  },
-
 });
+
 function App() {
   return (
     <NavigationContainer>
@@ -232,13 +212,9 @@ function App() {
         }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen
-          name="Main"
-          component={MainScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
+        <Stack.Screen name="Backend" component={BackendScreen} options={{ title: 'Backend' }} />
+        <Stack.Screen name="SchoolDetails" component={SchoolDetailsScreen} options={({ route }) => ({ title: route.params.school })} />
       </Stack.Navigator>
     </NavigationContainer>
   );
