@@ -145,17 +145,35 @@ const HomeScreen = () => {
   }, []);
 
   const handleLogin = async () => {
-    if (username === 'admin') {
-      setLoggedIn(true);
-      try {
-        await AsyncStorage.setItem('username', username);
-      } catch (error) {
-        console.error('Error saving login state:', error);
+    const apiUrl = 'http://192.168.0.46:5000/login';  // Replace with the actual server URL
+  
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      });
+  
+      const result = await response.json();
+  
+      if (result.success) {
+        setLoggedIn(true);
+        try {
+          await AsyncStorage.setItem('username', username);
+        } catch (error) {
+          console.error('Error saving login state:', error);
+        }
+      } else {
+        Alert.alert('Login Failed', 'Invalid username. Please try again.');
       }
-    } else {
-      Alert.alert('Login Failed', 'Invalid username. Please try again.');
+    } catch (error) {
+      console.error('Error during login:', error);
+      // Handle other errors as needed
     }
   };
+  
 
   const handleLogout = async () => {
     try {
