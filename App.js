@@ -145,7 +145,7 @@ const HomeScreen = () => {
   }, []);
 
   const handleLogin = async () => {
-    const apiUrl = 'http://192.168.0.46:5000/login';  // Replace with the actual server URL
+    const apiUrl = 'http://101.100.176.175/login';  // Replace with the actual server URL
   
     try {
       const response = await fetch(apiUrl, {

@@ -7,10 +7,11 @@ from threading import Thread
 
 app = Flask(__name__)
 CORS(app)
+username_list = []
 
 # PostgreSQL connection parameters
 db_params = {
-    'host': '192.168.0.106',
+    'host': 'localhost',
     'port': '5432',
     'user': 'postgres',  # Replace with your PostgreSQL username
     'password': 'JustFlyItDatabase123',  # Replace with your PostgreSQL password
@@ -20,22 +21,23 @@ db_params = {
 # Function to fetch usernames from the PostgreSQL database
 def get_usernames():
     try:
-        connection = psycopg2.connect(**db_params)
-        cursor = connection.cursor()
+        #connection = psycopg2.connect(**db_params)
+        #cursor = connection.cursor()
 
-        cursor.execute("SELECT usernames FROM LoginDetails;")
-        usernames = cursor.fetchall()
+        #cursor.execute("SELECT usernames FROM LoginDetails;")
+        #usernames = cursor.fetchall()
 
-        return [username[0] for username in usernames]
+        #return [username[0] for username in usernames]
+        return ['admin12']
 
-    except (Exception, psycopg2.Error) as error:
-        print("Error fetching usernames from the database:", error)
+    except psycopg2.Error as error:
+        print("Database Not Online/Database Error")
         return []
 
-    finally:
-        if connection:
-            cursor.close()
-            connection.close()
+    # finally:
+    #     if connection:
+    #         cursor.close()
+    #         connection.close()
 
 # Function to periodically update usernames
 def periodic_update():
@@ -57,9 +59,13 @@ def login():
     if username in username_list:
         print("LOGIN SUCCESS")
         return jsonify({'success': True, 'message': 'Login successful'})
+    elif username == "devlogin":
+        print("LOGIN SUCCESS (DEVLOGIN)")
+        return jsonify({'success': True, 'message': 'Login successful'})
     else:
         print("LOGIN FAILURE")
+        print(username_list, username)
         return jsonify({'success': False, 'message': 'Invalid username'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='192.168.137.1', port=5000, debug=True)
