@@ -1,54 +1,60 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-import psycopg2
-import time
+import subprocess
+import os
 from threading import Thread
-
+import time
+import sys
+import psycopg2
 
 app = Flask(__name__)
 CORS(app)
 username_list = []
+temperatures = []
+
 
 # PostgreSQL connection parameters
 db_params = {
     'host': 'localhost',
     'port': '5432',
-    'user': 'postgres',  # Replace with your PostgreSQL username
-    'password': 'JustFlyItDatabase123',  # Replace with your PostgreSQL password
-    'database': 'postgres',  # Replace with your database name
+    'user': 'postgres',  
+    'password': 'JustFlyItDatabase123',  
+    'database': 'postgres', 
 }
 
-# Function to fetch usernames from the PostgreSQL database
 def get_usernames():
     try:
-        #connection = psycopg2.connect(**db_params)
-        #cursor = connection.cursor()
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
 
-        #cursor.execute("SELECT usernames FROM LoginDetails;")
-        #usernames = cursor.fetchall()
+        cursor.execute("SELECT usernames FROM LoginDetails;")
+        usernames = cursor.fetchall()
 
-        #return [username[0] for username in usernames]
-        return ['admin12']
+        return [username[0] for username in usernames]
 
     except psycopg2.Error as error:
         print("Database Not Online/Database Error")
         return []
 
-    # finally:
-    #     if connection:
-    #         cursor.close()
-    #         connection.close()
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
 
-# Function to periodically update usernames
-def periodic_update():
+
+def periodic_database_update():
     global username_list
     while True:
         username_list = get_usernames()
-        time.sleep(5)  # Update every 5 seconds
+        time.sleep(5)  
 
-# Start the periodic update in a separate thread
-update_thread = Thread(target=periodic_update)
-update_thread.start()
+
+database_update_thread = Thread(target=periodic_database_update)
+database_update_thread.start()
+
+@app.route('/')
+def home():
+    return render_template('home.html', temperatures=temperatures, logins=username_list)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -68,4 +74,8 @@ def login():
         return jsonify({'success': False, 'message': 'Invalid username'})
 
 if __name__ == '__main__':
-    app.run(host='192.168.137.1', port=5000, debug=True)
+
+    host_ip = '192.168.0.106'  
+    port_number = 80
+
+    app.run(host=host_ip, port=port_number, debug=True)

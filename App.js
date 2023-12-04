@@ -1,17 +1,22 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import {
   View,
+  ImageBackground,
   Image,
   StyleSheet,
   Alert,
   TouchableOpacity,
   FlatList,
   TextInput,
+  Dimensions,
 } from 'react-native';
 import { Text, ThemeProvider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const Stack = createStackNavigator();
 
@@ -43,6 +48,86 @@ export const useAuth = () => {
   return context;
 };
 
+const SchoolAssignmentsScreen = () => {
+  const [assignment1, setAssignment1] = useState('');
+  const [assignment2, setAssignment2] = useState('');
+  const [assignment3, setAssignment3] = useState('');
+  const [assignment4, setAssignment4] = useState('');
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+
+  const navigation = useNavigation();
+
+  const handleSubmit = () => {
+    // Implement your submission logic here
+    // For demonstration purposes, let's assume a successful submission after 2 seconds
+    setTimeout(() => {
+      setSubmissionSuccess(true);
+    }, 2000);
+  };
+
+  const handleNavigateHome = () => {
+    setSubmissionSuccess(false);
+    navigation.navigate('Home');
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
+      <View>
+        {/* Rectangular Box 1 */}
+        <View style={styles.assignmentBox}>
+          <TextInput
+            style={styles.assignmentBoxText}
+            placeholder="Assignment 1"
+            value={assignment1}
+            onChangeText={(text) => setAssignment1(text)}
+          />
+        </View>
+
+        {/* Rectangular Box 2 */}
+        <View style={styles.assignmentBox}>
+          <TextInput
+            style={styles.assignmentBoxText}
+            placeholder="Assignment 2"
+            value={assignment2}
+            onChangeText={(text) => setAssignment2(text)}
+          />
+        </View>
+
+        {/* Rectangular Box 3 */}
+        <View style={styles.assignmentBox}>
+          <TextInput
+            style={styles.assignmentBoxText}
+            placeholder="Assignment 3"
+            value={assignment3}
+            onChangeText={(text) => setAssignment3(text)}
+          />
+        </View>
+
+        {/* Rectangular Box 4 */}
+        <View style={styles.assignmentBox}>
+          <TextInput
+            style={styles.assignmentBoxText}
+            placeholder="Assignment 4"
+            value={assignment4}
+            onChangeText={(text) => setAssignment4(text)}
+          />
+        </View>
+
+        {/* Submit Button */}
+        <Button title="Submit" onPress={handleSubmit} />
+
+        {/* Display Success Message */}
+        {submissionSuccess && (
+          <View style={styles.successMessage}>
+            <Text style={styles.successMessageText}>Submission Successful!</Text>
+            <Button title="Go to Home" onPress={handleNavigateHome} />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
 const TrainerProfileScreen = ({ route }) => {
   const { trainer } = route.params;
   const moeExpiryDate = new Date(trainer.moeExpiry);
@@ -55,28 +140,52 @@ const TrainerProfileScreen = ({ route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text h3 style={styles.trainerProfileLabel}>
-        Trainer Profile
-      </Text>
-      <View style={styles.trainerProfileCard}>
-        <Image source={{ uri: trainer.avatar }} style={styles.trainerProfileAvatar} />
-        <Text style={styles.trainerProfileName}>{trainer.name}</Text>
-        <Text style={styles.trainerProfileInfo}>Experience: {trainer.experience}</Text>
-        <Text style={styles.trainerProfileInfo}>
-          MOE Registration Expiry: {moeExpiryDate.toDateString()}
-        </Text>
-        {moeExpiryDate < currentDate ? (
-          <Text style={styles.trainerProfileInfo}>
-            Time since expiry: {formatTime(timeSinceExpiry)}
-          </Text>
-        ) : (
-          <Text style={styles.trainerProfileInfo}>
-            Time till expiry: {formatTime(moeExpiryDate - currentDate)}
-          </Text>
-        )}
+    <ImageBackground
+      source={require('./MicrosoftTeams-image (6).png')} // Replace with the actual image source
+      style={styles.container} // Adjust the style based on your design preference
+    >
+      <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
+        <View style={styles.container}>
+          <Text h3 style={styles.trainerProfileLabel}></Text>
+          <View style={styles.trainerProfileCard}>
+            <Avatar
+              rounded
+              source={{ uri: trainer.avatar }}
+              size="xlarge" // Adjust the size to your preference, e.g., "xlarge"
+              containerStyle={{
+                borderWidth: 3,
+                borderColor: '#383899',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+                borderRadius: 100, // Set to a large value to create a circular border
+                marginBottom: 10,
+                overflow: 'hidden', // Ensure the image stays within the circular border
+                marginTop: -80,
+                marginBottom: 10,
+                marginLeft: 85,
+              }}
+            />
+            <Text style={styles.trainerProfileName}>{trainer.name}</Text>
+            <Text style={styles.trainerProfileInfo}>Experience: {trainer.experience}</Text>
+            <Text style={styles.trainerProfileInfo}>
+              MOE Registration Expiry: {moeExpiryDate.toDateString()}
+            </Text>
+            {moeExpiryDate < currentDate ? (
+              <Text style={styles.trainerProfileInfo}>
+                Time since expiry: {formatTime(timeSinceExpiry)}
+              </Text>
+            ) : (
+              <Text style={styles.trainerProfileInfo}>
+                Time till expiry: {formatTime(moeExpiryDate - currentDate)}
+              </Text>
+            )}
+          </View>
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -94,39 +203,74 @@ const AllTrainersScreen = () => {
   // Find the maximum width of trainer names
   const maxNameWidth = Math.max(...trainersData.map((trainer) => trainer.name.length));
 
+  // Get the screen width
+  const windowWidth = Dimensions.get('window').width;
+
+  // Determine the number of columns based on screen width
+  const numColumns = windowWidth < 600 ? 1 : 5;
+
+  // Inside the AllTrainersScreen component
   const renderTrainerItem = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
       <ListItem
         bottomDivider
-        containerStyle={[styles.listItemContainer, { width: maxNameWidth * 17 , margin: 8, borderRadius: 15}]} // Adjust the multiplier as needed
+        containerStyle={[
+          styles.listItemContainer,
+          { width: maxNameWidth * 17, margin: 20, borderRadius: 15 },
+        ]}
         contentContainerStyle={styles.listItemContentContainer}
       >
-        <Avatar rounded source={{ uri: item.avatar }} />
+        <Avatar
+          rounded
+          source={{ uri: item.avatar }}
+          size="large"
+          containerStyle={{
+            borderWidth: 3,
+            borderColor: '#383899', // Border color
+            shadowColor: '#000',
+            shadowOffset: { width: 1, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
+        />
         <ListItem.Content style={styles.listItemContent}>
-          <ListItem.Title style={styles.listItemTitle}>{item.name}</ListItem.Title>
+          {/* Added fontWeight: 'bold' to make the font bold */}
+          <ListItem.Title
+            style={[
+              styles.listItemTitle,
+              { fontWeight: 'bold' },
+              { fontFamily: 'sweet apple' },
+              { color: 'white' },
+            ]}
+          >
+            {item.name}
+          </ListItem.Title>
         </ListItem.Content>
       </ListItem>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={trainersData}
-        renderItem={renderTrainerItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.flatListContainer}
-        numColumns={2}  // Set the number of columns to 2
-        columnWrapperStyle={styles.columnWrapper}
-      />
+    <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
+      <View style={[styles.container, { flexDirection: 'column' }]}>
+        <FlatList
+          data={trainersData}
+          renderItem={renderTrainerItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.flatListContainer}
+          numColumns={numColumns}
+        />
+      </View>
     </View>
   );
 };
 
-
 const HomeScreen = () => {
   const { loggedIn, setLoggedIn, username, setUsername } = useAuth();
   const navigation = useNavigation();
+  const [backgroundColor, setBackgroundColor] = useState('transparent');
+  const [imageLoadingError, setImageLoadingError] = useState(false);
 
   useEffect(() => {
     const loadLoginState = async () => {
@@ -145,8 +289,8 @@ const HomeScreen = () => {
   }, []);
 
   const handleLogin = async () => {
-    const apiUrl = 'http://101.100.176.175/login';  // Replace with the actual server URL
-  
+    const apiUrl = 'http://101.100.176.175/login'; // Replace with the actual server URL
+
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -155,9 +299,9 @@ const HomeScreen = () => {
         },
         body: JSON.stringify({ username }),
       });
-  
+
       const result = await response.json();
-  
+
       if (result.success) {
         setLoggedIn(true);
         try {
@@ -173,7 +317,6 @@ const HomeScreen = () => {
       // Handle other errors as needed
     }
   };
-  
 
   const handleLogout = async () => {
     try {
@@ -188,7 +331,7 @@ const HomeScreen = () => {
   const handleCardPress = (pageName) => {
     switch (pageName) {
       case 'School Assignments':
-        Alert.alert('Navigate to School Assignments');
+        navigation.navigate('SchoolAssignments');
         break;
       case "All Trainers'":
         navigation.navigate('AllTrainers');
@@ -201,11 +344,11 @@ const HomeScreen = () => {
     <TouchableOpacity onPress={() => handleCardPress(item.pageName)}>
       <View style={styles.cardContainer}>
         <View style={styles.card}>
-          <View style={[styles.circle, { backgroundColor: '#0CBFB4' }]}>
+          <View style={[styles.circle, { backgroundColor: 'transparent' }]}>
             <Icon
               name={item.pageName === 'School Assignments' ? 'home' : 'user'}
               type="font-awesome"
-              color={'gold'}
+              color={'white'}
               size={60}
             />
           </View>
@@ -221,43 +364,67 @@ const HomeScreen = () => {
     // Add more objects for additional pages
   ];
 
-  return (
-    <ThemeProvider theme={{ colors: { primary: '#0CBFB4', text: 'black', gold: 'gold', card: 'lightgray' } }}>
-      <View style={styles.container}>
-        <View style={styles.centeredContainer}>
-          <Image
-            source={require('./JFITransparent.png')} // Replace with the correct path to your local image
-            style={{ width: 200, height: 200, alignSelf: 'center', resizeMode: 'contain', marginBottom: 20 }}
-          />
+  const handleImageError = () => {
+    setImageLoadingError(true);
+    setBackgroundColor('#1C1C73'); // Set background color to red on image loading error
+  };
 
-          {loggedIn ? (
-            <View style={styles.homeContainer}>
-              <FlatList
-                data={data}
-                renderItem={renderCard}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                contentContainerStyle={styles.flatListContainer}
-              />
-            </View>
-          ) : (
-            <View style={styles.loginContainer}>
-              <TextInput
-                placeholder="Enter your username"
-                value={username}
-                onChangeText={(text) => setUsername(text)}
-                style={styles.textInput}
-              />
-              <Button
-                title="Login"
-                onPress={handleLogin}
-                buttonStyle={{ backgroundColor: 'black', borderRadius: 40 }}
-                titleStyle={{ color: 'gold' }}
-              />
-            </View>
-          )}
+  return (
+    <ThemeProvider
+      theme={{ colors: { primary: '#428C8B', text: 'white', gold: '#FFDBB0', card: 'white' } }}
+    >
+      <ImageBackground
+        source={
+          imageLoadingError ? null : require('./MicrosoftTeams-image (3).png')
+        }
+        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+        onError={handleImageError}
+      >
+        <View style={styles.container}>
+          <View style={styles.centeredContainer}>
+            <Image
+              source={require('./JFITransparent.png')}
+              style={{
+                width: 200,
+                height: 200,
+                alignSelf: 'center',
+                resizeMode: 'contain',
+                marginBottom: 20,
+              }}
+            />
+            {loggedIn ? (
+              <View style={styles.homeContainer}>
+                <FlatList
+                  data={data}
+                  renderItem={renderCard}
+                  keyExtractor={(item) => item.id}
+                  numColumns={2}
+                  contentContainerStyle={styles.flatListContainer}
+                />
+              </View>
+            ) : (
+              <View style={styles.loginContainer}>
+                <TextInput
+                  placeholder="Enter your username"
+                  value={username}
+                  onChangeText={(text) => setUsername(text)}
+                  style={styles.textInput}
+                />
+                <Button
+                  title="Login"
+                  onPress={handleLogin}
+                  buttonStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }} // Updated styles
+                  titleStyle={{
+                    color: 'white',
+                    fontFamily: 'fantasy',
+                    fontSize: 20,
+                  }} // Updated styles
+                />
+              </View>
+            )}
+          </View>
         </View>
-      </View>
+      </ImageBackground>
     </ThemeProvider>
   );
 };
@@ -278,17 +445,35 @@ const HomeScreenHeaderRight = () => {
 
   return (
     <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-      <Icon name="sign-out-alt" type="font-awesome-5" color={'gold'} size={20} />
+      <Icon name="sign-out-alt" type="font-awesome-5" color={'#1C1C73'} size={20} />
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',  // Adjust resizeMode based on your design preference
+    justifyContent: 'center',
+  },
+  rectangleImage: {
+    width: '100%', // Adjust the width as needed
+    height: 100, // Adjust the height as needed
+    resizeMode: 'cover',
+    marginBottom: 20,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0CBFB4',
+    backgroundColor: 'transparent',
+  },
+  trainerProfileContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: windowWidth, // Set width based on window width
+    height: windowHeight, // Set height based on window height
   },
   centeredContainer: {
     flex: 1,
@@ -309,10 +494,11 @@ const styles = StyleSheet.create({
     width: 150,
     height: 200,
     borderRadius: 10,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // box color on home page
     elevation: 5,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000', shadowOffset: {width: 0,height: 3,}, shadowOpacity: 0.25, shadowRadius: 10.84, elevation: 3,
   },
   card: {
     justifyContent: 'center',
@@ -322,37 +508,41 @@ const styles = StyleSheet.create({
     width: 75,
     height: 75,
     borderRadius: 25,
-    backgroundColor: '#0CBFB4',
+    backgroundColor: '#1C1C73',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardLabel: {
     fontSize: 20,
-    marginTop: 10,
-    color: 'black',
+    marginTop: 15,
+    color: 'white', // School Assignment and All Trainers' Text color
     textAlign: 'center',
+    fontWeight: 'bold',
+    fontFamily: 'Sweet Apples',
   },
   loginContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: '105%',
+    width: '120%',
   },
   textInput: {
-    backgroundColor: 'lightgray',
-    color: 'black',
+    backgroundColor: 'white',
+    color: 'grey',
     width: '80%',
     height: 50,
     paddingVertical: 15,
     paddingHorizontal: 20,
     marginBottom: 20,
     borderRadius: 10,
+    fontFamily: 'Sweet Apples',
   },
   logoutButton: {
     marginRight: 16,
-    backgroundColor: 'black',
+    backgroundColor: 'white',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 40,
+    fontFamily: 'Sweet Apples',
   },
   trainerCard: {
     margin: 10,
@@ -361,93 +551,136 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFDD0', // Magenta background
+    backgroundColor: '#1C1C73', // Magenta background
+    shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
   },
   trainerAvatar: {
-    width: 60,
-    height: 60,
+    width: 200,
+    height: 200,
     borderRadius: 30,
     marginBottom: 10,
     marginRight: 10,
   },
   trainerCardLabel: {
     fontSize: 18,
-    color: '#0CBFB4',
+    color: 'white', // Trainers' Profile text
     fontWeight: 'bold',
+    fontFamily: 'Sweet Apples',
   },
   trainerProfileLabel: {
     marginBottom: 20,
     color: 'white',
+    fontWeight: 'bold',
   },
   trainerProfileCard: {
-    backgroundColor: '#FFFDD0', // Magenta background
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // trainer card bg color
     padding: 20,
     borderRadius: 15,
     marginBottom: 20,
+    shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
   },
   trainerProfileAvatar: {
     width: 100,
     height: 100,
+    marginTop: -50,
     borderRadius: 50,
     marginBottom: 10,
+    marginLeft: 115,
   },
   trainerProfileName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: 'black',
+    color: 'white', // trainer profile text color
+    fontFamily: 'fantasy',
   },
   trainerProfileInfo: {
     fontSize: 18,
-    color: 'brown',
+    color: 'white',
     marginTop: 10,
+    fontFamily: 'Sweet Apples',
   },
   listItemContainer: {
     width: '100%', // Set to '100%' to take up the full width
-    backgroundColor: '#FFFDD0',
-    flexDirection: 'row', // Set to 'row' to display items horizontally
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // color for trainer profile card
+    flexDirection: 'column', // Set to 'row' to display items horizontally
     alignItems: 'center', // Center items vertically
-    borderBottomWidth: 1, // Add a border for separation
-    borderBottomColor: 'lightgray', // Border color
+    borderBottomWidth: 0, // Add a border for separation
+    borderBottomColor: '#1C1C73', // Border color
     paddingHorizontal: 15, // Add horizontal padding
     marginBottom: 10, // Add bottom margin for separation
+    shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
   },
-
+ 
   listItemTitle: {
     flex: 1, // Allow the title to take up remaining space
     marginLeft: 10, // Add left margin for separation from the avatar
   },
-
+ 
   columnWrapper: {
     justifyContent: 'space-between', // Adjust the alignment of columns
   },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  assignmentBox: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    marginVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  assignmentBoxText: {
+    fontSize: 18,
+    color: 'black',
+  },
+  successMessage: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  successMessageText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'green',
+    marginBottom: 10,
+  },
 });
-
+ 
+ 
 const App = () => {
   return (
     <AuthProvider>
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={({ navigation }) => ({
-              headerRight: () => <HomeScreenHeaderRight />,
-              headerShown: useAuth().loggedIn,
-              headerStyle: {
-                backgroundColor: 'black',
-              },
-              headerTintColor: 'gold',
-            })}
-          />
+        <Stack.Screen
+  name="Home"
+  component={HomeScreen}
+  options={({ navigation }) => ({
+    headerRight: () => <HomeScreenHeaderRight />,
+    headerShown: useAuth().loggedIn,
+    headerStyle: {
+      backgroundColor: 'transparent', // Set background color to transparent
+    },
+    headerTransparent: true, // Make the header transparent
+    headerTintColor: 'white', // Home text color
+    shadowColor: 'transparent', // Set shadow color to transparent
+  })}
+/>
           <Stack.Screen
             name="AllTrainers"
             component={AllTrainersScreen}
             options={{
               title: "All Trainers' Profile",
               headerStyle: {
-                backgroundColor: 'black',
+                backgroundColor: '#1C1C73', // Set background color to transparent
               },
-              headerTintColor: 'gold',
+              headerTransparent: false, // Make the header transparent
+              headerTintColor: 'white', // Home text color
+              shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, // Set shadow color to transparent
             }}
           />
           <Stack.Screen
@@ -456,15 +689,37 @@ const App = () => {
             options={{
               title: 'Trainer Profile',
               headerStyle: {
-                backgroundColor: 'black',
+                backgroundColor: 'transparent', // Set background color to transparent
               },
-              headerTintColor: 'gold',
+              headerTransparent: true, // Make the header transparent
+              headerTintColor: 'white', // Home text color
+              shadowColor: 'transparent', // Set shadow color to transparent
             }}
           />
+          <Stack.Screen
+    name="SchoolAssignments"
+    component={SchoolAssignmentsScreen}  // Include the SchoolAssignmentsScreen component
+    options={{
+      title: 'School Assignments',
+      headerStyle: {
+        backgroundColor: '#1C1C73',
+      },
+      headerTransparent: false,
+      headerTintColor: 'white',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    }}
+   
+  />
         </Stack.Navigator>
       </NavigationContainer>
     </AuthProvider>
   );
 };
-
+ 
+ 
+ 
 export default App;
