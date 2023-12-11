@@ -7,7 +7,7 @@ import time
 import sys
 import psycopg2
 
-app = Flask(__name__)
+app = Flask(__name__)                                                                                                  
 CORS(app)
 username_list = []
 temperatures = []
@@ -24,7 +24,7 @@ db_params = {
 
 def get_usernames():
     try:
-        connection = psycopg2.connect(**db_params)
+        connection = psycopg2.connect(*db_params)
         cursor = connection.cursor()
 
         cursor.execute("SELECT usernames FROM LoginDetails;")

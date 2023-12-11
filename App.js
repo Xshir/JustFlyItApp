@@ -14,32 +14,32 @@ import { Text, ThemeProvider, Icon, Button, ListItem, Avatar } from 'react-nativ
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
-
 const Stack = createStackNavigator();
-
 const AuthContext = createContext();
-
 export const AuthProvider = ({ children }) => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
-
+  const [theme, setTheme] = useState('light'); // Add theme state
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
   const authContextValue = {
     loggedIn,
     setLoggedIn,
     username,
     setUsername,
+    theme, // Include theme in the context
+    setTheme, // Include setTheme in the context
+    toggleTheme,
   };
-
   return (
-    <AuthContext.Provider value={authContextValue}>
+<AuthContext.Provider value={authContextValue}>
       {children}
-    </AuthContext.Provider>
+</AuthContext.Provider>
   );
 };
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -47,16 +47,16 @@ export const useAuth = () => {
   }
   return context;
 };
-
 const SchoolAssignmentsScreen = () => {
   const [assignment1, setAssignment1] = useState('');
   const [assignment2, setAssignment2] = useState('');
   const [assignment3, setAssignment3] = useState('');
   const [assignment4, setAssignment4] = useState('');
+  const [assignment5, setAssignment5] = useState('');
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
-
+  const [backgroundColor, setBackgroundColor] = useState('transparent');
+  const [imageLoadingError, setImageLoadingError] = useState(false);
   const navigation = useNavigation();
-
   const handleSubmit = () => {
     // Implement your submission logic here
     // For demonstration purposes, let's assume a successful submission after 2 seconds
@@ -64,214 +64,238 @@ const SchoolAssignmentsScreen = () => {
       setSubmissionSuccess(true);
     }, 2000);
   };
-
   const handleNavigateHome = () => {
     setSubmissionSuccess(false);
     navigation.navigate('Home');
   };
-
+ 
+  const handleImageError = () => {
+    setImageLoadingError(true);
+    setBackgroundColor('#1C1C73'); // Set background color to red on image loading error
+  };
   return (
-    <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
-      <View>
+    <ImageBackground
+        source={imageLoadingError ? null : require('./MicrosoftTeams-image (6).png')}
+        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+        onError={handleImageError} >
+<View style={[styles.container, {  paddingTop: 20, paddingBottom: 20, /* Add padding to the top */  }]}>
+<View>
         {/* Rectangular Box 1 */}
-        <View style={styles.assignmentBox}>
-          <TextInput
+<View style={styles.assignmentBox}>
+<TextInput
             style={styles.assignmentBoxText}
             placeholder="Assignment 1"
             value={assignment1}
             onChangeText={(text) => setAssignment1(text)}
           />
-        </View>
-
+</View>
         {/* Rectangular Box 2 */}
-        <View style={styles.assignmentBox}>
-          <TextInput
+<View style={styles.assignmentBox}>
+<TextInput
             style={styles.assignmentBoxText}
             placeholder="Assignment 2"
             value={assignment2}
             onChangeText={(text) => setAssignment2(text)}
           />
-        </View>
-
+</View>
         {/* Rectangular Box 3 */}
-        <View style={styles.assignmentBox}>
-          <TextInput
+<View style={styles.assignmentBox}>
+<TextInput
             style={styles.assignmentBoxText}
             placeholder="Assignment 3"
             value={assignment3}
             onChangeText={(text) => setAssignment3(text)}
           />
-        </View>
-
+</View>
         {/* Rectangular Box 4 */}
-        <View style={styles.assignmentBox}>
-          <TextInput
+<View style={styles.assignmentBox}>
+<TextInput
             style={styles.assignmentBoxText}
             placeholder="Assignment 4"
             value={assignment4}
             onChangeText={(text) => setAssignment4(text)}
           />
-        </View>
-
+</View>
+        {/* Rectangular Box 5 */}
+<View style={styles.assignmentBox}>
+<TextInput
+            style={styles.assignmentBoxText}
+            placeholder="Assignment 5"
+            value={assignment5}
+            onChangeText={(text) => setAssignment5(text)}
+          />
+</View>
         {/* Submit Button */}
-        <Button title="Submit" onPress={handleSubmit} />
-
+<Button title="Submit"
+        onPress={handleSubmit}
+        titleStyle={{ fontWeight: 'bold', fontSize: 18, }} />
+ 
         {/* Display Success Message */}
         {submissionSuccess && (
-          <View style={styles.successMessage}>
-            <Text style={styles.successMessageText}>Submission Successful!</Text>
-            <Button title="Go to Home" onPress={handleNavigateHome} />
-          </View>
+<View style={styles.successMessage}>
+<Text style={styles.successMessageText}>Submission Successful!</Text>
+<Button title="Go to Home"
+            onPress={handleNavigateHome}
+            titleStyle={{ fontWeight: 'bold', fontSize: 18 }} />
+</View>
         )}
-      </View>
-    </View>
+</View>
+</View>
+</ImageBackground>
   );
 };
-
 const TrainerProfileScreen = ({ route }) => {
   const { trainer } = route.params;
   const moeExpiryDate = new Date(trainer.moeExpiry);
   const currentDate = new Date();
   const timeSinceExpiry = moeExpiryDate < currentDate ? currentDate - moeExpiryDate : 0;
-
   const formatTime = (milliseconds) => {
     const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
     return `${days} days`;
   };
-
+  const [backgroundColor, setBackgroundColor] = useState('transparent');
+  const [imageLoadingError, setImageLoadingError] = useState(false);
+ 
+  const handleImageError = () => {
+    setImageLoadingError(true);
+    setBackgroundColor('#1C1C73'); // Set background color to red on image loading error
+  };
   return (
     <ImageBackground
-      source={require('./MicrosoftTeams-image (6).png')} // Replace with the actual image source
-      style={styles.container} // Adjust the style based on your design preference
-    >
-      <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
-        <View style={styles.container}>
-          <Text h3 style={styles.trainerProfileLabel}></Text>
-          <View style={styles.trainerProfileCard}>
-            <Avatar
-              rounded
-              source={{ uri: trainer.avatar }}
-              size="xlarge" // Adjust the size to your preference, e.g., "xlarge"
-              containerStyle={{
-                borderWidth: 3,
-                borderColor: '#383899',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-                elevation: 5,
-                borderRadius: 100, // Set to a large value to create a circular border
-                marginBottom: 10,
-                overflow: 'hidden', // Ensure the image stays within the circular border
-                marginTop: -80,
-                marginBottom: 10,
-                marginLeft: 85,
-              }}
-            />
-            <Text style={styles.trainerProfileName}>{trainer.name}</Text>
-            <Text style={styles.trainerProfileInfo}>Experience: {trainer.experience}</Text>
-            <Text style={styles.trainerProfileInfo}>
-              MOE Registration Expiry: {moeExpiryDate.toDateString()}
-            </Text>
-            {moeExpiryDate < currentDate ? (
-              <Text style={styles.trainerProfileInfo}>
-                Time since expiry: {formatTime(timeSinceExpiry)}
-              </Text>
-            ) : (
-              <Text style={styles.trainerProfileInfo}>
-                Time till expiry: {formatTime(moeExpiryDate - currentDate)}
-              </Text>
-            )}
-          </View>
-        </View>
-      </View>
-    </ImageBackground>
+        source={imageLoadingError ? null : require('./MicrosoftTeams-image (6).png')}
+        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+        onError={handleImageError} >
+<View style={[styles.container,]}>
+<View style={styles.container}>
+<View style={styles.trainerProfileCard}>
+<Avatar
+          rounded
+          source={{ uri: trainer.avatar }}
+          size="xlarge"  // Adjust the size to your preference, e.g., "xlarge"
+          containerStyle={{
+            borderWidth: 3,
+            borderColor: '#383899',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+            borderRadius: 100, // Set to a large value to create a circular border
+            marginBottom: 10,
+            overflow: 'hidden', // Ensure the image stays within the circular border
+            marginTop: -80,
+            marginBottom: 10,
+            marginLeft: 85,
+          }}
+        />
+<Text style={styles.trainerProfileName}>{trainer.name}</Text>
+<Text style={styles.trainerProfileInfo}>Experience: {trainer.experience}</Text>
+<Text style={styles.trainerProfileInfo}>
+          MOE Registration Expiry: {moeExpiryDate.toDateString()}
+</Text>
+        {moeExpiryDate < currentDate ? (
+<Text style={styles.trainerProfileInfo}>
+            Time since expiry: {formatTime(timeSinceExpiry)}
+</Text>
+        ) : (
+<Text style={styles.trainerProfileInfo}>
+            Time till expiry: {formatTime(moeExpiryDate - currentDate)}
+</Text>
+        )}
+</View>
+</View>
+</View>
+</ImageBackground>
   );
 };
-
 const AllTrainersScreen = () => {
   const navigation = useNavigation();
-
+  const { addTrainer } = useAuth(); // Assuming you have a function to add a trainer
+  const [showButtons, setShowButtons] = useState(false);
   const trainersData = Array.from({ length: 20 }, (_, index) => ({
     id: String(index + 1),
     name: `Trainer ${index + 1}`,
     experience: `${index + 1} years`,
-    moeExpiry: '2023-12-31', // Replace with actual date
-    avatar: `https://placekitten.com/100/${100 + index}`, // Cat picture
+    moeExpiry: '2023-12-31',
+    avatar: `https://placekitten.com/100/${100 + index}`,
   }));
-
   // Find the maximum width of trainer names
   const maxNameWidth = Math.max(...trainersData.map((trainer) => trainer.name.length));
-
-  // Get the screen width
-  const windowWidth = Dimensions.get('window').width;
-
+    // Get the screen width
+    const windowWidth = Dimensions.get('window').width;
   // Determine the number of columns based on screen width
-  const numColumns = windowWidth < 600 ? 1 : 5;
-
-  // Inside the AllTrainersScreen component
-  const renderTrainerItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
-      <ListItem
-        bottomDivider
-        containerStyle={[
-          styles.listItemContainer,
-          { width: maxNameWidth * 17, margin: 20, borderRadius: 15 },
-        ]}
-        contentContainerStyle={styles.listItemContentContainer}
-      >
-        <Avatar
-          rounded
-          source={{ uri: item.avatar }}
-          size="large"
-          containerStyle={{
-            borderWidth: 3,
-            borderColor: '#383899', // Border color
-            shadowColor: '#000',
-            shadowOffset: { width: 1, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
-        <ListItem.Content style={styles.listItemContent}>
-          {/* Added fontWeight: 'bold' to make the font bold */}
-          <ListItem.Title
-            style={[
-              styles.listItemTitle,
-              { fontWeight: 'bold' },
-              { fontFamily: 'sweet apple' },
-              { color: 'white' },
-            ]}
-          >
-            {item.name}
-          </ListItem.Title>
-        </ListItem.Content>
-      </ListItem>
-    </TouchableOpacity>
-  );
-
-  return (
-    <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
-      <View style={[styles.container, { flexDirection: 'column' }]}>
-        <FlatList
-          data={trainersData}
-          renderItem={renderTrainerItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.flatListContainer}
-          numColumns={numColumns}
-        />
-      </View>
-    </View>
-  );
+  const numColumns = windowWidth < 600 ? 2 : 5;
+// Inside the AllTrainersScreen component
+const renderTrainerItem = ({ item }) => (
+<TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
+<ListItem
+      bottomDivider
+      containerStyle={[styles.listItemContainer, { width: maxNameWidth * 17, margin: 20, borderRadius: 15 }]}
+      contentContainerStyle={styles.listItemContentContainer}
+>
+<Avatar
+        rounded
+        source={{ uri: item.avatar }}
+        size="large"
+        containerStyle={{
+          borderWidth: 3,
+          borderColor: '#383899', // Border color
+          shadowColor: '#000',
+          shadowOffset: { width: 1, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5,
+        }}
+      />
+<ListItem.Content style={styles.listItemContent}>
+        {/* Added fontWeight: 'bold' to make the font bold */}
+<ListItem.Title style={[styles.listItemTitle, { fontWeight: 'bold' },  {color: 'white'}]}>{item.name}</ListItem.Title>
+</ListItem.Content>
+</ListItem>
+</TouchableOpacity>
+);
+const handleAddTrainer = () => {
+  // Implement logic to add a trainer
+  // ...
+  // Assuming newTrainer is the newly added trainer
+  setTrainersData([...trainersData, newTrainer]);
 };
-
+const handleEditPress = () => {
+  setShowButtons((prev) => !prev);
+};
+return (
+<View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
+<View style={[styles.container, { flexDirection: 'column' }]}>
+      {/* Add Trainer Button */}
+      {showButtons && (
+<TouchableOpacity onPress={handleAddTrainer} style={styles.addButton}>
+<Icon name="plus-circle" type="font-awesome" color={'white'} size={40} />
+<Text style={styles.addButtonLabel}>Add Trainer</Text>
+</TouchableOpacity>
+      )}
+      {/* Edit Button */}
+<TouchableOpacity onPress={handleEditPress} style={styles.editButton}>
+<Text style={styles.editButtonText}>{showButtons ? 'Done' : 'Edit'}</Text>
+</TouchableOpacity>
+<FlatList
+        data={trainersData}
+        renderItem={renderTrainerItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.flatListContainer}
+        numColumns={numColumns}
+      />
+</View>
+</View>
+);
+};
+ 
 const HomeScreen = () => {
-  const { loggedIn, setLoggedIn, username, setUsername } = useAuth();
+  const { loggedIn, setLoggedIn, username, setUsername, theme, toggleTheme } = useAuth();
   const navigation = useNavigation();
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [imageLoadingError, setImageLoadingError] = useState(false);
-
+ 
+ 
   useEffect(() => {
     const loadLoginState = async () => {
       try {
@@ -284,13 +308,10 @@ const HomeScreen = () => {
         console.error('Error loading login state:', error);
       }
     };
-
     loadLoginState();
   }, []);
-
   const handleLogin = async () => {
-    const apiUrl = 'http://101.100.176.175/login'; // Replace with the actual server URL
-
+    const apiUrl = 'http://101.100.176.175/login';  // Replace with the actual server URL
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -299,9 +320,7 @@ const HomeScreen = () => {
         },
         body: JSON.stringify({ username }),
       });
-
       const result = await response.json();
-
       if (result.success) {
         setLoggedIn(true);
         try {
@@ -317,7 +336,7 @@ const HomeScreen = () => {
       // Handle other errors as needed
     }
   };
-
+ 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('username');
@@ -327,7 +346,6 @@ const HomeScreen = () => {
     setLoggedIn(false);
     setUsername('');
   };
-
   const handleCardPress = (pageName) => {
     switch (pageName) {
       case 'School Assignments':
@@ -339,117 +357,111 @@ const HomeScreen = () => {
       // Add cases for other pages as needed
     }
   };
-
   const renderCard = ({ item }) => (
-    <TouchableOpacity onPress={() => handleCardPress(item.pageName)}>
-      <View style={styles.cardContainer}>
-        <View style={styles.card}>
-          <View style={[styles.circle, { backgroundColor: 'transparent' }]}>
-            <Icon
-              name={item.pageName === 'School Assignments' ? 'home' : 'user'}
-              type="font-awesome"
-              color={'white'}
-              size={60}
-            />
-          </View>
-          <Text style={styles.cardLabel}>{item.pageName}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+<TouchableOpacity onPress={() => handleCardPress(item.pageName)}>
+<View style={styles.cardContainer}>
+<View style={styles.card}>
+<View style={[styles.circle, { backgroundColor: 'transparent' }]}>
+            {item.pageName === 'School Assignments' ? (
+<Icon name="home" type="font-awesome" color={'white'} size={50} />
+            ) : item.pageName === 'Schedule Activities' ? (
+<Icon name="calendar" type="font-awesome" color={'white'} size={40} />
+            ) : item.pageName === "All Trainers'" ? (
+<Icon name="users" type="font-awesome" color={'white'} size={40} />
+            ) : (
+<Icon name="check-box" type="material" color={'white'} size={50} />
+            )}
+</View>
+<Text style={styles.cardLabel}>{item.pageName}</Text>
+</View>
+</View>
+</TouchableOpacity>
   );
-
   const data = [
     { id: '1', pageName: 'School Assignments' },
     { id: '2', pageName: "All Trainers'" },
+    { id: '3', pageName: 'Schedule Activities'},
+    { id: '4', pageName: 'Check In/Out'},
     // Add more objects for additional pages
   ];
-
   const handleImageError = () => {
     setImageLoadingError(true);
     setBackgroundColor('#1C1C73'); // Set background color to red on image loading error
   };
-
   return (
-    <ThemeProvider
-      theme={{ colors: { primary: '#428C8B', text: 'white', gold: '#FFDBB0', card: 'white' } }}
+    <ThemeProvider theme={{ colors: { primary: '#428C8B', text: 'white', gold: '#FFDBB0', card: 'white' } }}>
+    <ImageBackground
+      source={imageLoadingError ? null : getBackgroundImage(theme)}
+      style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+      onError={handleImageError}
     >
-      <ImageBackground
-        source={
-          imageLoadingError ? null : require('./MicrosoftTeams-image (3).png')
-        }
-        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
-        onError={handleImageError}
-      >
-        <View style={styles.container}>
-          <View style={styles.centeredContainer}>
-            <Image
-              source={require('./JFITransparent.png')}
-              style={{
-                width: 200,
-                height: 200,
-                alignSelf: 'center',
-                resizeMode: 'contain',
-                marginBottom: 20,
-              }}
-            />
-            {loggedIn ? (
-              <View style={styles.homeContainer}>
-                <FlatList
+      <View style={styles.container}>
+        <View style={styles.centeredContainer}>
+          <Image
+            source={require('./JFITransparent.png')}
+            style={{ width: 170, height: 170, alignSelf: 'center', resizeMode: 'contain', marginBottom: 10 }}
+          />
+          {loggedIn ? (
+            <View style={styles.homeContainer}>
+        <TouchableOpacity onPress={toggleTheme} style={styles.themeSwitchButton}>
+          <Icon name="cog" type="font-awesome-5" color="white" size={20} />
+         
+        </TouchableOpacity>
+<FlatList
                   data={data}
                   renderItem={renderCard}
                   keyExtractor={(item) => item.id}
                   numColumns={2}
                   contentContainerStyle={styles.flatListContainer}
                 />
-              </View>
+</View>
             ) : (
-              <View style={styles.loginContainer}>
-                <TextInput
+<View style={styles.loginContainer}>
+<TextInput
                   placeholder="Enter your username"
                   value={username}
                   onChangeText={(text) => setUsername(text)}
                   style={styles.textInput}
                 />
-                <Button
+<Button
                   title="Login"
                   onPress={handleLogin}
-                  buttonStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }} // Updated styles
-                  titleStyle={{
-                    color: 'white',
-                    fontFamily: 'fantasy',
-                    fontSize: 20,
-                  }} // Updated styles
+                  buttonStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderColor: 'white', borderRadius: 15, borderWidth: 2,}} // Updated styles
+                  titleStyle={{ color: 'white',  fontSize: 20 , fontWeight: 'bold' }} // Updated styles
                 />
-              </View>
+</View>
             )}
-          </View>
-        </View>
-      </ImageBackground>
-    </ThemeProvider>
+</View>
+</View>
+</ImageBackground>
+</ThemeProvider>
   );
 };
-
+const getBackgroundImage = (theme) => {
+  return theme === 'light' ? require('./MicrosoftTeams-image (4).png') : require('./MicrosoftTeams-image (3).png');
+};
 const HomeScreenHeaderRight = () => {
   const { setLoggedIn, setUsername } = useAuth();
   const navigation = useNavigation();
-
+  
+ 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('username');
+      setLoggedIn(false);
+      setUsername('');
     } catch (error) {
       console.error('Error clearing login state:', error);
+      Alert.alert('Error', 'An error occurred while logging out. Please try again.');
     }
-    setLoggedIn(false);
-    setUsername('');
   };
-
   return (
-    <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-      <Icon name="sign-out-alt" type="font-awesome-5" color={'#1C1C73'} size={20} />
-    </TouchableOpacity>
+<TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+<Icon name="sign-out-alt" type="font-awesome-5" color="white" size={20} />
+<Text style={styles.logoutButtonText}>Logout</Text>
+</TouchableOpacity>
   );
 };
-
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
@@ -491,34 +503,34 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     margin: 10,
-    width: 150,
-    height: 200,
+    width: 120,  // Adjust the width to make the cards smaller
+    height: 160, // Adjust the height to make the cards smaller
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // box color on home page
-    elevation: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000', shadowOffset: {width: 0,height: 3,}, shadowOpacity: 0.25, shadowRadius: 10.84, elevation: 3,
+    borderColor: 'white',
+    borderRadius: 15,
+    borderWidth: 2,
   },
   card: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   circle: {
-    width: 75,
-    height: 75,
+    width: 50,  // Adjust the width to make the mascot image smaller
+    height: 50, // Adjust the height to make the mascot image smaller
     borderRadius: 25,
     backgroundColor: '#1C1C73',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardLabel: {
-    fontSize: 20,
-    marginTop: 15,
-    color: 'white', // School Assignment and All Trainers' Text color
+    fontSize: 14, // Adjust the font size to make the text smaller
+    marginTop: 10,
+    color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',
-    fontFamily: 'Sweet Apples',
   },
   loginContainer: {
     justifyContent: 'center',
@@ -534,15 +546,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
     borderRadius: 10,
-    fontFamily: 'Sweet Apples',
+    fontWeight: 'bold',
+  },
+  logoutContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+    padding: 10,
   },
   logoutButton: {
-    marginRight: 16,
-    backgroundColor: 'white',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 40,
-    fontFamily: 'Sweet Apples',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 15,
+    marginRight: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // Adjust the background color as needed
+    borderRadius: 8,
+    borderColor: 'white',
+    borderRadius: 15,
+    borderWidth: 2,
+  },
+  logoutButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
   trainerCard: {
     margin: 10,
@@ -552,7 +581,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#1C1C73', // Magenta background
-    shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
   },
   trainerAvatar: {
     width: 200,
@@ -565,7 +593,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'white', // Trainers' Profile text
     fontWeight: 'bold',
-    fontFamily: 'Sweet Apples',
   },
   trainerProfileLabel: {
     marginBottom: 20,
@@ -577,7 +604,9 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 15,
     marginBottom: 20,
-    shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
+    borderColor: 'white',
+    borderRadius: 15,
+    borderWidth: 2,
   },
   trainerProfileAvatar: {
     width: 100,
@@ -590,31 +619,30 @@ const styles = StyleSheet.create({
   trainerProfileName: {
     fontSize: 24,
     color: 'white', // trainer profile text color
-    fontFamily: 'fantasy',
+    fontWeight: 'bold',
   },
   trainerProfileInfo: {
     fontSize: 18,
     color: 'white',
     marginTop: 10,
-    fontFamily: 'Sweet Apples',
   },
   listItemContainer: {
     width: '100%', // Set to '100%' to take up the full width
     backgroundColor: 'rgba(255, 255, 255, 0.3)', // color for trainer profile card
     flexDirection: 'column', // Set to 'row' to display items horizontally
     alignItems: 'center', // Center items vertically
-    borderBottomWidth: 0, // Add a border for separation
-    borderBottomColor: '#1C1C73', // Border color
+    borderBottomWidth: 2, // Add a border for separation
+    borderBottomColor: 'white', // Border color
     paddingHorizontal: 15, // Add horizontal padding
     marginBottom: 10, // Add bottom margin for separation
-    shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
+    borderColor: 'white',
+    borderRadius: 15,
+    borderWidth: 2,
   },
- 
   listItemTitle: {
     flex: 1, // Allow the title to take up remaining space
     marginLeft: 10, // Add left margin for separation from the avatar
   },
- 
   columnWrapper: {
     justifyContent: 'space-between', // Adjust the alignment of columns
   },
@@ -636,7 +664,7 @@ const styles = StyleSheet.create({
   },
   assignmentBoxText: {
     fontSize: 18,
-    color: 'black',
+    color: 'grey',
   },
   successMessage: {
     marginTop: 20,
@@ -645,18 +673,81 @@ const styles = StyleSheet.create({
   successMessageText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'green',
+    color: 'white',
     marginBottom: 10,
+  },
+  assignmentLabel: {
+    color: 'white', // Set the color to white
+    fontSize: 18,
+    fontWeight: 'bold'
+  },
+  addButton: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  addButtonLabel: {
+    fontSize: 18,
+    color: 'white',
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  editButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    alignSelf: 'flex-start',
+    marginLeft: 20,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  editButtonText: {
+    fontSize: 18,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+   trainerItemContainer: {
+    position: 'relative',
+    width: '100%',
+  },
+  removeTrainerButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'transparent',
+  },
+  themeSwitchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 20,
+    left: 730,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    marginTop: 15,
+    marginRight: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  themeSwitchButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
  
- 
 const App = () => {
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <Stack.Navigator>
-        <Stack.Screen
+<AuthProvider>
+<NavigationContainer>
+<Stack.Navigator>
+<Stack.Screen
   name="Home"
   component={HomeScreen}
   options={({ navigation }) => ({
@@ -670,7 +761,7 @@ const App = () => {
     shadowColor: 'transparent', // Set shadow color to transparent
   })}
 />
-          <Stack.Screen
+<Stack.Screen
             name="AllTrainers"
             component={AllTrainersScreen}
             options={{
@@ -680,10 +771,9 @@ const App = () => {
               },
               headerTransparent: false, // Make the header transparent
               headerTintColor: 'white', // Home text color
-              shadowColor: '#000', shadowOffset: {width: 0,height: 2,}, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, // Set shadow color to transparent
             }}
           />
-          <Stack.Screen
+<Stack.Screen
             name="TrainerProfile"
             component={TrainerProfileScreen}
             options={{
@@ -696,7 +786,7 @@ const App = () => {
               shadowColor: 'transparent', // Set shadow color to transparent
             }}
           />
-          <Stack.Screen
+<Stack.Screen
     name="SchoolAssignments"
     component={SchoolAssignmentsScreen}  // Include the SchoolAssignmentsScreen component
     options={{
@@ -712,14 +802,11 @@ const App = () => {
       shadowRadius: 3.84,
       elevation: 5,
     }}
-   
   />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AuthProvider>
+</Stack.Navigator>
+</NavigationContainer>
+</AuthProvider>
   );
 };
- 
- 
  
 export default App;
