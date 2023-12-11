@@ -230,7 +230,7 @@ const renderTrainerItem = ({ item }) => (
 <TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
 <ListItem
       bottomDivider
-      containerStyle={[styles.listItemContainer, { width: maxNameWidth * 17, margin: 20, borderRadius: 15 }]}
+      containerStyle={[styles.listItemContainer, { width: maxNameWidth * 15, margin: 20, borderRadius: 15 }]}
       contentContainerStyle={styles.listItemContentContainer}
 >
 <Avatar
