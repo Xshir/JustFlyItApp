@@ -462,6 +462,8 @@ const HomeScreenHeaderRight = () => {
 </TouchableOpacity>
   );
 };
+
+
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
