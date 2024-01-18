@@ -443,7 +443,7 @@ const HomeScreen = () => {
   );
 };
 const getBackgroundImage = (theme) => {
-  return theme === 'light' ? require('./MicrosoftTeams-image (4).png') : require('./MicrosoftTeams-image (3).png');
+  return theme === 'light' ? require('./MicrosoftTeams-image(4).png') : require('./MicrosoftTeams-image (3).png');
 };
 const HomeScreenHeaderRight = () => {
   const { setLoggedIn, setUsername } = useAuth();
