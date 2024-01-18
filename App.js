@@ -79,7 +79,7 @@ const SchoolAssignmentsScreen = () => {
   };
   return (
     <ImageBackground
-      source={imageLoadingError ? null : require('./MicrosoftTeams-image (6).png')}
+      source={imageLoadingError ? null : require('./MicrosoftTeams-image(6).png')}
       style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
       onError={handleImageError} >
       <View style={[styles.container, { paddingTop: 20, paddingBottom: 20, /* Add padding to the top */ }]}>
@@ -443,7 +443,7 @@ const HomeScreen = () => {
   );
 };
 const getBackgroundImage = (theme) => {
-  return theme === 'light' ? require('./MicrosoftTeams-image(4).png') : require('./MicrosoftTeams-image (3).png');
+  return theme === 'light' ? require('./MicrosoftTeams-image(4).png') : require('./MicrosoftTeams-image(3).png');
 };
 const HomeScreenHeaderRight = () => {
   const { setLoggedIn, setUsername } = useAuth();
