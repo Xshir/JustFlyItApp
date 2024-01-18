@@ -14,10 +14,12 @@ import { Text, ThemeProvider, Icon, Button, ListItem, Avatar } from 'react-nativ
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const Stack = createStackNavigator();
 const AuthContext = createContext();
+
 export const AuthProvider = ({ children }) => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
@@ -35,11 +37,12 @@ export const AuthProvider = ({ children }) => {
     toggleTheme,
   };
   return (
-<AuthContext.Provider value={authContextValue}>
+    <AuthContext.Provider value={authContextValue}>
       {children}
-</AuthContext.Provider>
+    </AuthContext.Provider>
   );
 };
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -47,6 +50,7 @@ export const useAuth = () => {
   }
   return context;
 };
+
 const SchoolAssignmentsScreen = () => {
   const [assignment1, setAssignment1] = useState('');
   const [assignment2, setAssignment2] = useState('');
@@ -68,234 +72,234 @@ const SchoolAssignmentsScreen = () => {
     setSubmissionSuccess(false);
     navigation.navigate('Home');
   };
- 
+
   const handleImageError = () => {
     setImageLoadingError(true);
     setBackgroundColor('#1C1C73'); // Set background color to red on image loading error
   };
   return (
     <ImageBackground
-        source={imageLoadingError ? null : require('./MicrosoftTeams-image (6).png')}
-        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
-        onError={handleImageError} >
-<View style={[styles.container, {  paddingTop: 20, paddingBottom: 20, /* Add padding to the top */  }]}>
-<View>
-        {/* Rectangular Box 1 */}
-<View style={styles.assignmentBox}>
-<TextInput
-            style={styles.assignmentBoxText}
-            placeholder="Assignment 1"
-            value={assignment1}
-            onChangeText={(text) => setAssignment1(text)}
-          />
-</View>
-        {/* Rectangular Box 2 */}
-<View style={styles.assignmentBox}>
-<TextInput
-            style={styles.assignmentBoxText}
-            placeholder="Assignment 2"
-            value={assignment2}
-            onChangeText={(text) => setAssignment2(text)}
-          />
-</View>
-        {/* Rectangular Box 3 */}
-<View style={styles.assignmentBox}>
-<TextInput
-            style={styles.assignmentBoxText}
-            placeholder="Assignment 3"
-            value={assignment3}
-            onChangeText={(text) => setAssignment3(text)}
-          />
-</View>
-        {/* Rectangular Box 4 */}
-<View style={styles.assignmentBox}>
-<TextInput
-            style={styles.assignmentBoxText}
-            placeholder="Assignment 4"
-            value={assignment4}
-            onChangeText={(text) => setAssignment4(text)}
-          />
-</View>
-        {/* Rectangular Box 5 */}
-<View style={styles.assignmentBox}>
-<TextInput
-            style={styles.assignmentBoxText}
-            placeholder="Assignment 5"
-            value={assignment5}
-            onChangeText={(text) => setAssignment5(text)}
-          />
-</View>
-        {/* Submit Button */}
-<Button title="Submit"
-        onPress={handleSubmit}
-        titleStyle={{ fontWeight: 'bold', fontSize: 18, }} />
- 
-        {/* Display Success Message */}
-        {submissionSuccess && (
-<View style={styles.successMessage}>
-<Text style={styles.successMessageText}>Submission Successful!</Text>
-<Button title="Go to Home"
-            onPress={handleNavigateHome}
-            titleStyle={{ fontWeight: 'bold', fontSize: 18 }} />
-</View>
-        )}
-</View>
-</View>
-</ImageBackground>
+      source={imageLoadingError ? null : require('./MicrosoftTeams-image (6).png')}
+      style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+      onError={handleImageError} >
+      <View style={[styles.container, { paddingTop: 20, paddingBottom: 20, /* Add padding to the top */ }]}>
+        <View>
+          {/* Rectangular Box 1 */}
+          <View style={styles.assignmentBox}>
+            <TextInput
+              style={styles.assignmentBoxText}
+              placeholder="Assignment 1"
+              value={assignment1}
+              onChangeText={(text) => setAssignment1(text)}
+            />
+          </View>
+          {/* Rectangular Box 2 */}
+          <View style={styles.assignmentBox}>
+            <TextInput
+              style={styles.assignmentBoxText}
+              placeholder="Assignment 2"
+              value={assignment2}
+              onChangeText={(text) => setAssignment2(text)}
+            />
+          </View>
+          {/* Rectangular Box 3 */}
+          <View style={styles.assignmentBox}>
+            <TextInput
+              style={styles.assignmentBoxText}
+              placeholder="Assignment 3"
+              value={assignment3}
+              onChangeText={(text) => setAssignment3(text)}
+            />
+          </View>
+          {/* Rectangular Box 4 */}
+          <View style={styles.assignmentBox}>
+            <TextInput
+              style={styles.assignmentBoxText}
+              placeholder="Assignment 4"
+              value={assignment4}
+              onChangeText={(text) => setAssignment4(text)}
+            />
+          </View>
+          {/* Rectangular Box 5 */}
+          <View style={styles.assignmentBox}>
+            <TextInput
+              style={styles.assignmentBoxText}
+              placeholder="Assignment 5"
+              value={assignment5}
+              onChangeText={(text) => setAssignment5(text)}
+            />
+          </View>
+          {/* Submit Button */}
+          <Button title="Submit"
+            onPress={handleSubmit}
+            titleStyle={{ fontWeight: 'bold', fontSize: 18, }} />
+
+          {/* Display Success Message */}
+          {submissionSuccess && (
+            <View style={styles.successMessage}>
+              <Text style={styles.successMessageText}>Submission Successful!</Text>
+              <Button title="Go to Home"
+                onPress={handleNavigateHome}
+                titleStyle={{ fontWeight: 'bold', fontSize: 18 }} />
+            </View>
+          )}
+        </View>
+      </View>
+    </ImageBackground>
   );
 };
+
 const TrainerProfileScreen = ({ route }) => {
   const { trainer } = route.params;
-  const moeExpiryDate = new Date(trainer.moeExpiry);
-  const currentDate = new Date();
-  const timeSinceExpiry = moeExpiryDate < currentDate ? currentDate - moeExpiryDate : 0;
-  const formatTime = (milliseconds) => {
-    const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
-    return `${days} days`;
-  };
+
+  const dynamicInfo = Object.entries(trainer).map(([key, value]) => (
+    <Text key={key} style={styles.trainerProfileInfo}>
+      {key.replace(/_/g, ' ')}: {key === 'profile_picture' ? 'Profile Picture' : value}
+    </Text>
+  ));
+
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [imageLoadingError, setImageLoadingError] = useState(false);
- 
+
   const handleImageError = () => {
     setImageLoadingError(true);
-    setBackgroundColor('#1C1C73'); // Set background color to red on image loading error
+    setBackgroundColor('#1C1C73');
   };
+
+  const profilePictureSource = { uri: trainer.profile_picture };
+
   return (
     <ImageBackground
-        source={imageLoadingError ? null : require('./MicrosoftTeams-image (6).png')}
-        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
-        onError={handleImageError} >
-<View style={[styles.container,]}>
-<View style={styles.container}>
-<View style={styles.trainerProfileCard}>
-<Avatar
+      source={imageLoadingError ? null : profilePictureSource}
+      style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+      onError={handleImageError}
+    >
+      <View style={[styles.container,]}>
+        <View style={styles.container}>
+          <View style={styles.trainerProfileCard}>
+            <Avatar
+              rounded
+              source={profilePictureSource}
+              size="xlarge"
+              containerStyle={{
+                borderWidth: 3,
+                borderColor: '#383899',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+                borderRadius: 100,
+                marginBottom: 10,
+                overflow: 'hidden',
+                marginTop: -80,
+                marginBottom: 10,
+                marginLeft: 85,
+              }}
+            />
+            <Text style={styles.trainerProfileName}>{trainer.full_name}</Text>
+            {dynamicInfo}
+          </View>
+        </View>
+      </View>
+    </ImageBackground>
+  );
+};
+
+const AllTrainersScreen = () => {
+  const navigation = useNavigation();
+  const [trainersData, setTrainersData] = useState([]);
+  const [showButtons, setShowButtons] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://101.100.176.175/trainers_profile_data');
+        const data = await response.json();
+        setTrainersData(data.trainers_profile_data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [showButtons]);
+
+  const maxNameWidth = Math.max(...trainersData.map((trainer) => trainer.full_name.length));
+  const windowWidth = Dimensions.get('window').width;
+  const numColumns = windowWidth < 600 ? 2 : 5;
+
+  const renderTrainerItem = ({ item }) => (
+    <TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
+      <ListItem
+        bottomDivider
+        containerStyle={[styles.listItemContainer, { width: maxNameWidth * 15, margin: 20, borderRadius: 15 }]}
+        contentContainerStyle={styles.listItemContentContainer}
+      >
+        <Avatar
           rounded
-          source={{ uri: trainer.avatar }}
-          size="xlarge"  // Adjust the size to your preference, e.g., "xlarge"
+          source={{ uri: item.profile_picture }}
+          size="large"
           containerStyle={{
             borderWidth: 3,
             borderColor: '#383899',
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
+            shadowOffset: { width: 1, height: 2 },
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
             elevation: 5,
-            borderRadius: 100, // Set to a large value to create a circular border
-            marginBottom: 10,
-            overflow: 'hidden', // Ensure the image stays within the circular border
-            marginTop: -80,
-            marginBottom: 10,
-            marginLeft: 85,
           }}
         />
-<Text style={styles.trainerProfileName}>{trainer.name}</Text>
-<Text style={styles.trainerProfileInfo}>Experience: {trainer.experience}</Text>
-<Text style={styles.trainerProfileInfo}>
-          MOE Registration Expiry: {moeExpiryDate.toDateString()}
-</Text>
-        {moeExpiryDate < currentDate ? (
-<Text style={styles.trainerProfileInfo}>
-            Time since expiry: {formatTime(timeSinceExpiry)}
-</Text>
-        ) : (
-<Text style={styles.trainerProfileInfo}>
-            Time till expiry: {formatTime(moeExpiryDate - currentDate)}
-</Text>
+        <ListItem.Content style={styles.listItemContent}>
+          <ListItem.Title style={[styles.listItemTitle, { fontWeight: 'bold' }, { color: 'white' }]}>
+            {item.full_name}
+          </ListItem.Title>
+        </ListItem.Content>
+      </ListItem>
+    </TouchableOpacity>
+  );
+
+  const handleAddTrainer = () => {
+    // Implement logic to add a trainer
+    // ...
+    // Assuming newTrainer is the newly added trainer
+    setTrainersData([...trainersData, newTrainer]);
+  };
+
+  const handleEditPress = () => {
+    setShowButtons((prev) => !prev);
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
+      <View style={[styles.container, { flexDirection: 'column' }]}>
+        {showButtons && (
+          <TouchableOpacity onPress={handleAddTrainer} style={styles.addButton}>
+            <Icon name="plus-circle" type="font-awesome" color={'white'} size={40} />
+            <Text style={styles.addButtonLabel}>Add Trainer</Text>
+          </TouchableOpacity>
         )}
-</View>
-</View>
-</View>
-</ImageBackground>
+        <TouchableOpacity onPress={handleEditPress} style={styles.editButton}>
+          <Text style={styles.editButtonText}>{showButtons ? 'Done' : 'Edit'}</Text>
+        </TouchableOpacity>
+        <FlatList
+          data={trainersData}
+          renderItem={renderTrainerItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.flatListContainer}
+          numColumns={numColumns}
+        />
+      </View>
+    </View>
   );
 };
-const AllTrainersScreen = () => {
-  const navigation = useNavigation();
-  const { addTrainer } = useAuth(); // Assuming you have a function to add a trainer
-  const [showButtons, setShowButtons] = useState(false);
-  const trainersData = Array.from({ length: 20 }, (_, index) => ({
-    id: String(index + 1),
-    name: `Trainer ${index + 1}`,
-    experience: `${index + 1} years`,
-    moeExpiry: '2023-12-31',
-    avatar: `https://placekitten.com/100/${100 + index}`,
-  }));
-  // Find the maximum width of trainer names
-  const maxNameWidth = Math.max(...trainersData.map((trainer) => trainer.name.length));
-    // Get the screen width
-    const windowWidth = Dimensions.get('window').width;
-  // Determine the number of columns based on screen width
-  const numColumns = windowWidth < 600 ? 2 : 5;
-// Inside the AllTrainersScreen component
-const renderTrainerItem = ({ item }) => (
-<TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
-<ListItem
-      bottomDivider
-      containerStyle={[styles.listItemContainer, { width: maxNameWidth * 15, margin: 20, borderRadius: 15 }]}
-      contentContainerStyle={styles.listItemContentContainer}
->
-<Avatar
-        rounded
-        source={{ uri: item.avatar }}
-        size="large"
-        containerStyle={{
-          borderWidth: 3,
-          borderColor: '#383899', // Border color
-          shadowColor: '#000',
-          shadowOffset: { width: 1, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}
-      />
-<ListItem.Content style={styles.listItemContent}>
-        {/* Added fontWeight: 'bold' to make the font bold */}
-<ListItem.Title style={[styles.listItemTitle, { fontWeight: 'bold' },  {color: 'white'}]}>{item.name}</ListItem.Title>
-</ListItem.Content>
-</ListItem>
-</TouchableOpacity>
-);
-const handleAddTrainer = () => {
-  // Implement logic to add a trainer
-  // ...
-  // Assuming newTrainer is the newly added trainer
-  setTrainersData([...trainersData, newTrainer]);
-};
-const handleEditPress = () => {
-  setShowButtons((prev) => !prev);
-};
-return (
-<View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
-<View style={[styles.container, { flexDirection: 'column' }]}>
-      {/* Add Trainer Button */}
-      {showButtons && (
-<TouchableOpacity onPress={handleAddTrainer} style={styles.addButton}>
-<Icon name="plus-circle" type="font-awesome" color={'white'} size={40} />
-<Text style={styles.addButtonLabel}>Add Trainer</Text>
-</TouchableOpacity>
-      )}
-      {/* Edit Button */}
-<TouchableOpacity onPress={handleEditPress} style={styles.editButton}>
-<Text style={styles.editButtonText}>{showButtons ? 'Done' : 'Edit'}</Text>
-</TouchableOpacity>
-<FlatList
-        data={trainersData}
-        renderItem={renderTrainerItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.flatListContainer}
-        numColumns={numColumns}
-      />
-</View>
-</View>
-);
-};
- 
 const HomeScreen = () => {
   const { loggedIn, setLoggedIn, username, setUsername, theme, toggleTheme } = useAuth();
   const navigation = useNavigation();
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [imageLoadingError, setImageLoadingError] = useState(false);
- 
- 
+
+
   useEffect(() => {
     const loadLoginState = async () => {
       try {
@@ -336,7 +340,7 @@ const HomeScreen = () => {
       // Handle other errors as needed
     }
   };
- 
+
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('username');
@@ -358,30 +362,31 @@ const HomeScreen = () => {
     }
   };
   const renderCard = ({ item }) => (
-<TouchableOpacity onPress={() => handleCardPress(item.pageName)}>
-<View style={styles.cardContainer}>
-<View style={styles.card}>
-<View style={[styles.circle, { backgroundColor: 'transparent' }]}>
+    <TouchableOpacity onPress={() => handleCardPress(item.pageName)}>
+      <View style={styles.cardContainer}>
+        <View style={styles.card}>
+          <View style={[styles.circle, { backgroundColor: 'transparent' }]}>
             {item.pageName === 'School Assignments' ? (
-<Icon name="home" type="font-awesome" color={'white'} size={50} />
+              <Icon name="home" type="font-awesome" color={'white'} size={50} />
             ) : item.pageName === 'Schedule Activities' ? (
-<Icon name="calendar" type="font-awesome" color={'white'} size={40} />
+              <Icon name="calendar" type="font-awesome" color={'white'} size={40} />
             ) : item.pageName === "All Trainers'" ? (
-<Icon name="users" type="font-awesome" color={'white'} size={40} />
+              <Icon name="users" type="font-awesome" color={'white'} size={40} />
             ) : (
-<Icon name="check-box" type="material" color={'white'} size={50} />
+              <Icon name="fact-check" type="material" color={'white'} size={50} />
             )}
-</View>
-<Text style={styles.cardLabel}>{item.pageName}</Text>
-</View>
-</View>
-</TouchableOpacity>
+
+          </View>
+          <Text style={styles.cardLabel}>{item.pageName}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
   const data = [
     { id: '1', pageName: 'School Assignments' },
     { id: '2', pageName: "All Trainers'" },
-    { id: '3', pageName: 'Schedule Activities'},
-    { id: '4', pageName: 'Check In/Out'},
+    { id: '3', pageName: 'Schedule Activities' },
+    { id: '4', pageName: 'Confirm Activity Completion' },
     // Add more objects for additional pages
   ];
   const handleImageError = () => {
@@ -390,51 +395,51 @@ const HomeScreen = () => {
   };
   return (
     <ThemeProvider theme={{ colors: { primary: '#428C8B', text: 'white', gold: '#FFDBB0', card: 'white' } }}>
-    <ImageBackground
-      source={imageLoadingError ? null : getBackgroundImage(theme)}
-      style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
-      onError={handleImageError}
-    >
-      <View style={styles.container}>
-        <View style={styles.centeredContainer}>
-          <Image
-            source={require('./JFITransparent.png')}
-            style={{ width: 170, height: 170, alignSelf: 'center', resizeMode: 'contain', marginBottom: 10 }}
-          />
-          {loggedIn ? (
-            <View style={styles.homeContainer}>
-        <TouchableOpacity onPress={toggleTheme} style={styles.themeSwitchButton}>
-          <Icon name="cog" type="font-awesome-5" color="white" size={20} />
-         
-        </TouchableOpacity>
-<FlatList
+      <ImageBackground
+        source={imageLoadingError ? null : getBackgroundImage(theme)}
+        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+        onError={handleImageError}
+      >
+        <View style={styles.container}>
+          <View style={styles.centeredContainer}>
+            <Image
+              source={require('./JFITransparent.png')}
+              style={{ width: 170, height: 170, alignSelf: 'center', resizeMode: 'contain', marginBottom: 10 }}
+            />
+            {loggedIn ? (
+              <View style={styles.homeContainer}>
+                <TouchableOpacity onPress={toggleTheme} style={styles.themeSwitchButton}>
+                  <Icon name="cog" type="font-awesome-5" color="white" size={20} />
+
+                </TouchableOpacity>
+                <FlatList
                   data={data}
                   renderItem={renderCard}
                   keyExtractor={(item) => item.id}
                   numColumns={2}
                   contentContainerStyle={styles.flatListContainer}
                 />
-</View>
+              </View>
             ) : (
-<View style={styles.loginContainer}>
-<TextInput
+              <View style={styles.loginContainer}>
+                <TextInput
                   placeholder="Enter your username"
                   value={username}
                   onChangeText={(text) => setUsername(text)}
                   style={styles.textInput}
                 />
-<Button
+                <Button
                   title="Login"
                   onPress={handleLogin}
-                  buttonStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderColor: 'white', borderRadius: 15, borderWidth: 2,}} // Updated styles
-                  titleStyle={{ color: 'white',  fontSize: 20 , fontWeight: 'bold' }} // Updated styles
+                  buttonStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderColor: 'white', borderRadius: 15, borderWidth: 2, }} // Updated styles
+                  titleStyle={{ color: 'white', fontSize: 20, fontWeight: 'bold' }} // Updated styles
                 />
-</View>
+              </View>
             )}
-</View>
-</View>
-</ImageBackground>
-</ThemeProvider>
+          </View>
+        </View>
+      </ImageBackground>
+    </ThemeProvider>
   );
 };
 const getBackgroundImage = (theme) => {
@@ -443,8 +448,8 @@ const getBackgroundImage = (theme) => {
 const HomeScreenHeaderRight = () => {
   const { setLoggedIn, setUsername } = useAuth();
   const navigation = useNavigation();
-  
- 
+
+
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('username');
@@ -456,10 +461,10 @@ const HomeScreenHeaderRight = () => {
     }
   };
   return (
-<TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-<Icon name="sign-out-alt" type="font-awesome-5" color="white" size={20} />
-<Text style={styles.logoutButtonText}>Logout</Text>
-</TouchableOpacity>
+    <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+      <Icon name="sign-out-alt" type="font-awesome-5" color="white" size={20} />
+      <Text style={styles.logoutButtonText}>Logout</Text>
+    </TouchableOpacity>
   );
 };
 
@@ -711,7 +716,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-   trainerItemContainer: {
+  trainerItemContainer: {
     position: 'relative',
     width: '100%',
   },
@@ -743,27 +748,27 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
- 
+
 const App = () => {
   return (
-<AuthProvider>
-<NavigationContainer>
-<Stack.Navigator>
-<Stack.Screen
-  name="Home"
-  component={HomeScreen}
-  options={({ navigation }) => ({
-    headerRight: () => <HomeScreenHeaderRight />,
-    headerShown: useAuth().loggedIn,
-    headerStyle: {
-      backgroundColor: 'transparent', // Set background color to transparent
-    },
-    headerTransparent: true, // Make the header transparent
-    headerTintColor: 'white', // Home text color
-    shadowColor: 'transparent', // Set shadow color to transparent
-  })}
-/>
-<Stack.Screen
+    <AuthProvider>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={({ navigation }) => ({
+              headerRight: () => <HomeScreenHeaderRight />,
+              headerShown: useAuth().loggedIn,
+              headerStyle: {
+                backgroundColor: 'transparent', // Set background color to transparent
+              },
+              headerTransparent: true, // Make the header transparent
+              headerTintColor: 'white', // Home text color
+              shadowColor: 'transparent', // Set shadow color to transparent
+            })}
+          />
+          <Stack.Screen
             name="AllTrainers"
             component={AllTrainersScreen}
             options={{
@@ -775,7 +780,7 @@ const App = () => {
               headerTintColor: 'white', // Home text color
             }}
           />
-<Stack.Screen
+          <Stack.Screen
             name="TrainerProfile"
             component={TrainerProfileScreen}
             options={{
@@ -788,27 +793,27 @@ const App = () => {
               shadowColor: 'transparent', // Set shadow color to transparent
             }}
           />
-<Stack.Screen
-    name="SchoolAssignments"
-    component={SchoolAssignmentsScreen}  // Include the SchoolAssignmentsScreen component
-    options={{
-      title: 'School Assignments',
-      headerStyle: {
-        backgroundColor: '#1C1C73',
-      },
-      headerTransparent: false,
-      headerTintColor: 'white',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-    }}
-  />
-</Stack.Navigator>
-</NavigationContainer>
-</AuthProvider>
+          <Stack.Screen
+            name="SchoolAssignments"
+            component={SchoolAssignmentsScreen}  // Include the SchoolAssignmentsScreen component
+            options={{
+              title: 'School Assignments',
+              headerStyle: {
+                backgroundColor: '#1C1C73',
+              },
+              headerTransparent: false,
+              headerTintColor: 'white',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
- 
+
 export default App;

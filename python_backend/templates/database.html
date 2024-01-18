@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Admin Page</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1, h2 {
+            margin: 10px;
+        }
+
+        h1 {
+            font-size: 2em;
+        }
+
+        h2 {
+            font-size: 1.5em;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin-top: 20px;
+            background-color: #001f3f;
+        }
+
+        th, td {
+            border: 1px solid white;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #444444;
+            color: white;
+        }
+
+        /* Style for header cells */
+        th {
+            background-color: #FFD700;
+            color: #222222; /* Dark text on gold background */
+        }
+
+        /* Additional style for title case text */
+        .titlecase {
+            text-transform: capitalize;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Admin Page</h1>
+    
+    <label for="titleCaseSlider">Toggle Title Case:</label>
+    <input type="range" min="0" max="1" value="0" class="slider" id="titleCaseSlider">
+
+    {% for table_name, table_data in tables.items() %}
+        <h2>{{ table_name|replace('_', ' ')|title }}</h2>
+        <table id="{{ 'table-' + loop.index|string }}">
+            <tr>
+                {% for column_name in table_data[0].keys() %}
+                    <th class="{{ 'titlecase-' + loop.index|string }}">{{ column_name|replace('_', ' ') }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in table_data %}
+                <tr>
+                    {% for value in row.values() %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+
+    <script>
+        document.getElementById('titleCaseSlider').addEventListener('input', function() {
+            var titleCase = this.value == 1;
+            var tables = document.querySelectorAll('table');
+            
+            tables.forEach(function(table) {
+                var headers = table.querySelectorAll('th');
+                headers.forEach(function(header) {
+                    header.classList.toggle('titlecase', titleCase);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
