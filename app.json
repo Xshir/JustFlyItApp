@@ -11,6 +11,9 @@
       "eas": {
         "projectId": "98eac66a-e637-435d-9293-f1c940ae365c"
       }
+    },
+    "android": {
+      "package": "com.jfiapp"
     }
   }
 }
