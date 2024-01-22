@@ -1,40 +1,53 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply plugin: "com.android.application"
 
-buildscript {
-    ext {
-        buildToolsVersion = findProperty('android.buildToolsVersion') ?: '33.0.0'
-        minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '21')
-        compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '33')
-        targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '33')
-        kotlinVersion = findProperty('android.kotlinVersion') ?: '1.8.10'
-        frescoVersion = findProperty('expo.frescoVersion') ?: '2.5.0'
+android {
+    compileSdkVersion 30
+    defaultConfig {
+        applicationId "com.jfiapp" // Replace with your app's package name
+        minSdkVersion 16
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true // Add this line if you encounter multidex issues
+    }
 
-        // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
-        ndkVersion = "23.1.7779620"
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
     }
-    repositories {
-        google()
-        mavenCentral()
+
+    packagingOptions {
+        pickFirst "lib/x86_64/libjsc.so"
+        pickFirst "lib/arm64-v8a/libjsc.so"
+        pickFirst "lib/x86/libjsc.so"
+        pickFirst "lib/armeabi-v7a/libjsc.so"
     }
-    dependencies {
-        classpath('com.android.tools.build:gradle:7.4.2')
-        classpath('com.facebook.react:react-native-gradle-plugin')
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+            universalApk false
+        }
     }
 }
 
-allprojects {
-    repositories {
-        maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url(new File(['node', '--print', "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), '../android'))
-        }
-        maven {
-            // Android JSC is installed from npm
-            url(new File(['node', '--print', "require.resolve('jsc-android/package.json')"].execute(null, rootDir).text.trim(), '../dist'))
-        }
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "com.android.support:appcompat-v7:28.0.0" // Replace with the appropriate version
+    implementation "com.facebook.react:react-native:+" // Use the version of React Native you are using
 
-        google()
-        mavenCentral()
-        maven { url 'https://www.jitpack.io' }
-    }
+    // Add other dependencies here, if any
+
+    implementation 'com.google.android.gms:play-services-base:17.5.0' // Example: Google Play services
 }
+
+task copyDownloadableDepsToLibs(type: Copy) {
+    from configurations.compile
+    into 'libs'
+}
+
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
