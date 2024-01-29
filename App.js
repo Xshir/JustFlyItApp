@@ -79,7 +79,7 @@ const SchoolAssignmentsScreen = () => {
   };
   return (
     <ImageBackground
-      source={imageLoadingError ? null : require('./MicrosoftTeams-image(6).png')}
+      source={imageLoadingError ? null : require('./assets/MicrosoftTeams-image(6).png')}
       style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
       onError={handleImageError} >
       <View style={[styles.container, { paddingTop: 20, paddingBottom: 20, /* Add padding to the top */ }]}>
@@ -152,11 +152,28 @@ const SchoolAssignmentsScreen = () => {
 const TrainerProfileScreen = ({ route }) => {
   const { trainer } = route.params;
 
-  const dynamicInfo = Object.entries(trainer).map(([key, value]) => (
-    <Text key={key} style={styles.trainerProfileInfo}>
-      {key.replace(/_/g, ' ')}: {key === 'profile_picture' ? 'Profile Picture' : value}
-    </Text>
-  ));
+  const toTitleCase = (str) => {
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+  };
+  
+  const dynamicInfo = Object.entries(trainer).map(([key, value]) => {
+    // If value is not available, display "NO DATA"
+    const displayValue = value || "NO DATA";
+  
+    // Skip rendering for the 'profile_picture' key
+    if (key === 'profile_picture') {
+      return null;
+    }
+  
+    const displayKey = toTitleCase(key.replace(/_/g, ' '));
+  
+    return (
+      <Text key={key} style={styles.trainerProfileInfo}>
+        {displayKey}: {displayValue}
+      </Text>
+    );
+  });
+  
 
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [imageLoadingError, setImageLoadingError] = useState(false);
@@ -166,11 +183,13 @@ const TrainerProfileScreen = ({ route }) => {
     setBackgroundColor('#1C1C73');
   };
 
-  const profilePictureSource = { uri: trainer.profile_picture };
+  const profilePictureSource = trainer.profile_picture
+  ? { uri: trainer.profile_picture }
+  : require('./assets/default-pfp.jpg');
 
   return (
     <ImageBackground
-      source={imageLoadingError ? null : profilePictureSource}
+    source={imageLoadingError ? null : require('./assets/MicrosoftTeams-image(6).png')}
       style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
       onError={handleImageError}
     >
@@ -210,6 +229,7 @@ const AllTrainersScreen = () => {
   const navigation = useNavigation();
   const [trainersData, setTrainersData] = useState([]);
   const [showButtons, setShowButtons] = useState(false);
+  const [moeRegistrationDate, setMoeRegistrationDate] = useState(new Date('2024-03-01')); // Replace with the actual MOE registration date
 
   useEffect(() => {
     const fetchData = async () => {
@@ -227,38 +247,93 @@ const AllTrainersScreen = () => {
 
   const maxNameWidth = Math.max(...trainersData.map((trainer) => trainer.full_name.length));
   const windowWidth = Dimensions.get('window').width;
-  const numColumns = windowWidth < 600 ? 2 : 5;
+  const numColumns = 2
 
-  const renderTrainerItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
-      <ListItem
-        bottomDivider
-        containerStyle={[styles.listItemContainer, { width: maxNameWidth * 15, margin: 20, borderRadius: 15 }]}
-        contentContainerStyle={styles.listItemContentContainer}
-      >
-        <Avatar
-          rounded
-          source={{ uri: item.profile_picture }}
-          size="large"
-          containerStyle={{
-            borderWidth: 3,
-            borderColor: '#383899',
-            shadowColor: '#000',
-            shadowOffset: { width: 1, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
-        <ListItem.Content style={styles.listItemContent}>
-          <ListItem.Title style={[styles.listItemTitle, { fontWeight: 'bold' }, { color: 'white' }]}>
-            {item.full_name}
-          </ListItem.Title>
-        </ListItem.Content>
-      </ListItem>
-    </TouchableOpacity>
-  );
+  const renderTrainerItem = ({ item }) => {
+    const profilePictureSource = item.profile_picture
+      ? { uri: item.profile_picture }
+      : require('./assets/default-pfp.jpg');
+  
+    const isRegistrationWithin3Months = () => {
+      const registrationDate = new Date(item.expiry_date);
+      const currentDate = new Date();
+      const diffMonths =
+        (registrationDate.getFullYear() - currentDate.getFullYear()) * 12 +
+        registrationDate.getMonth() -
+        currentDate.getMonth();
+      return Math.abs(diffMonths) <= 3;
+    };
+  
+    const itemWidth = windowWidth / 2 - 30;
+    const maxCardHeight = 150; // Set the maximum height for the card
+  
+    const listItemContainerStyle = {
+      width: itemWidth,
+      margin: 10,
+      borderRadius: 15,
+      backgroundColor: isRegistrationWithin3Months() ? 'red' : 'transparent',
+      height: maxCardHeight, // Set a fixed height for the card
+    };
+  
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${day}-${month}-${year}`;
+    };
+  
+    return (
+      <TouchableOpacity onPress={() => navigation.navigate('TrainerProfile', { trainer: item })}>
+        <View style={[styles.listItemContainer, listItemContainerStyle]}>
+          <Avatar
+            rounded
+            source={profilePictureSource}
+            size="large"
+            containerStyle={{
+              borderWidth: 3,
+              borderColor: '#383899',
+              shadowColor: '#000',
+              shadowOffset: { width: 1, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          />
+          <View style={styles.listItemContent}>
+            <Text
+              style={[
+                styles.listItemTitle,
+                { fontWeight: 'bold', color: 'white', textAlign: 'center'},
+              ]}
+            >
+              {item.full_name}
+              {'\n'}
+              {isRegistrationWithin3Months() ? (
+            <Text style={{ color: 'yellow', fontWeight: 'bold', textAlign: 'center' }}>
+              MOE Registration Expiring Soon ({formatDate(item.expiry_date)})
+            </Text>
+          ) : item.moe_registered ? (
+            <Text style={{ color: 'green', fontWeight: 'bold', textAlign: 'center' }}>
+              MOE Registered Trainer
+            </Text>
+          ) : (
+            <Text style={{ color: 'gray', fontWeight: 'bold', textAlign: 'center' }}>
+              Not Registered
+            </Text>
+            )}
+              </Text>
 
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  
+  
+  
+  
+  
   const handleAddTrainer = () => {
     // Implement logic to add a trainer
     // ...
@@ -266,22 +341,21 @@ const AllTrainersScreen = () => {
     setTrainersData([...trainersData, newTrainer]);
   };
 
+  
   const handleEditPress = () => {
     setShowButtons((prev) => !prev);
   };
 
+  
+
   return (
     <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
       <View style={[styles.container, { flexDirection: 'column' }]}>
-        {showButtons && (
-          <TouchableOpacity onPress={handleAddTrainer} style={styles.addButton}>
-            <Icon name="plus-circle" type="font-awesome" color={'white'} size={40} />
-            <Text style={styles.addButtonLabel}>Add Trainer</Text>
-          </TouchableOpacity>
-        )}
+       {/* 
         <TouchableOpacity onPress={handleEditPress} style={styles.editButton}>
           <Text style={styles.editButtonText}>{showButtons ? 'Done' : 'Edit'}</Text>
         </TouchableOpacity>
+         */}
         <FlatList
           data={trainersData}
           renderItem={renderTrainerItem}
@@ -293,6 +367,7 @@ const AllTrainersScreen = () => {
     </View>
   );
 };
+
 const HomeScreen = () => {
   const { loggedIn, setLoggedIn, username, setUsername, theme, toggleTheme } = useAuth();
   const navigation = useNavigation();
@@ -432,7 +507,6 @@ const HomeScreen = () => {
                   title="Login"
                   onPress={handleLogin}
                   buttonStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderColor: 'white', borderRadius: 15, borderWidth: 2, }} // Updated styles
-                  titleStyle={{ color: 'white', fontSize: 20, fontWeight: 'bold' }} // Updated styles
                 />
               </View>
             )}
@@ -443,7 +517,7 @@ const HomeScreen = () => {
   );
 };
 const getBackgroundImage = (theme) => {
-  return theme === 'light' ? require('./MicrosoftTeams-image(4).png') : require('./MicrosoftTeams-image(3).png');
+  return theme === 'light' ? require('./assets/MicrosoftTeams-image(4).png') : require('./assets/MicrosoftTeams-image(3).png');
 };
 const HomeScreenHeaderRight = () => {
   const { setLoggedIn, setUsername } = useAuth();
@@ -507,6 +581,9 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     alignItems: 'center',
+    paddingHorizontal: 20, // Add horizontal padding
+    marginTop: 20, // Add top margin
+    marginLeft: -10
   },
   cardContainer: {
     margin: 10,
@@ -634,7 +711,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   listItemContainer: {
-    width: '100%', // Set to '100%' to take up the full width
+    width: 250, // Set to '100%' to take up the full width
     backgroundColor: 'rgba(255, 255, 255, 0.3)', // color for trainer profile card
     flexDirection: 'column', // Set to 'row' to display items horizontally
     alignItems: 'center', // Center items vertically
@@ -645,6 +722,8 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderRadius: 15,
     borderWidth: 2,
+    flex: 1,
+    alignSelf: 'center'
   },
   listItemTitle: {
     flex: 1, // Allow the title to take up remaining space
@@ -746,6 +825,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
+  },
+  moeRegistrationMessage: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 10,
   },
 });
 
