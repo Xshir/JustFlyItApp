@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, {  useRef, useState, useEffect, createContext, useContext } from 'react';
 import {
   View,
   ImageBackground,
@@ -9,22 +9,25 @@ import {
   FlatList,
   TextInput,
   Dimensions,
+  Linking
 } from 'react-native';
 import { Text, ThemeProvider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const Stack = createStackNavigator();
+// AuthProvider component
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
-  const [theme, setTheme] = useState('light'); // Add theme state
-  const toggleTheme = () => {
+  const [fullName, setFullName] = useState('');
+  const [theme, setTheme] = useState('light');
+  const [isStaff, setIsStaff] = useState(false);  // Add isStaff state
+  const toggleTheme = () =>  {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
   };
   const authContextValue = {
@@ -32,16 +35,22 @@ export const AuthProvider = ({ children }) => {
     setLoggedIn,
     username,
     setUsername,
-    theme, // Include theme in the context
-    setTheme, // Include setTheme in the context
+    theme,
+    setTheme,
+    isStaff,  // Include isStaff in the context
+    setIsStaff,  // Include setIsStaff in the context
+    fullName, 
+    setFullName,
     toggleTheme,
   };
+
   return (
     <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );
 };
+
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -149,31 +158,58 @@ const SchoolAssignmentsScreen = () => {
   );
 };
 
+
 const TrainerProfileScreen = ({ route }) => {
+  const [trainersData, setTrainersData] = useState([]);
+  
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://101.100.176.175/trainers_profile_data');
+        const data = await response.json();
+        setTrainersData(data.trainers_profile_data);
+        console.log(data.trainers_profile_data)
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const fetchUpdatedData = async () => {
+    try {
+      const response = await fetch('http://101.100.176.175/trainers_profile_data');
+      const data = await response.json();
+      setTrainersData(data.trainers_profile_data);
+      console.log(data.trainers_profile_data);
+    } catch (error) {
+      console.error('Error fetching updated data:', error);
+    }
+  };
+
   const { trainer } = route.params;
 
   const toTitleCase = (str) => {
     return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
   };
-  
+
   const dynamicInfo = Object.entries(trainer).map(([key, value]) => {
-    // If value is not available, display "NO DATA"
     const displayValue = value || "NO DATA";
-  
-    // Skip rendering for the 'profile_picture' key
+
     if (key === 'profile_picture') {
       return null;
     }
-  
+
     const displayKey = toTitleCase(key.replace(/_/g, ' '));
-  
+
     return (
       <Text key={key} style={styles.trainerProfileInfo}>
         {displayKey}: {displayValue}
       </Text>
     );
   });
-  
 
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [imageLoadingError, setImageLoadingError] = useState(false);
@@ -183,43 +219,52 @@ const TrainerProfileScreen = ({ route }) => {
     setBackgroundColor('#1C1C73');
   };
 
+  const isExpiryWithin3Months = () => {
+    const expiryDate = new Date(trainer.expiry_date);
+    const currentDate = new Date();
+    const threeMonthsFromNow = new Date();
+    threeMonthsFromNow.setMonth(currentDate.getMonth() + 3);
+    return expiryDate <= threeMonthsFromNow;
+  };
+
+  const renderRenewButton = () => {
+    if (isExpiryWithin3Months()) {
+      return (
+        <TouchableOpacity
+          style={styles.squareButton}
+          onPress={() => {
+            Linking.openURL('https://rems.moe.edu.sg/');
+          }}
+        >
+          <Text style={styles.renewButtonText}>Renew MOE Registration</Text>
+        </TouchableOpacity>
+      );
+    }
+    return null;
+  };
+
   const profilePictureSource = trainer.profile_picture
-  ? { uri: trainer.profile_picture }
-  : require('./assets/default-pfp.jpg');
+    ? { uri: trainer.profile_picture }
+    : require('./assets/default-pfp.jpg');
 
   return (
     <ImageBackground
-    source={imageLoadingError ? null : require('./assets/MicrosoftTeams-image(6).png')}
-      style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+      source={imageLoadingError ? null : require('./assets/MicrosoftTeams-image(6).png')}
+      style={{ flex: 1, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
       onError={handleImageError}
     >
-      <View style={[styles.container,]}>
-        <View style={styles.container}>
-          <View style={styles.trainerProfileCard}>
-            <Avatar
-              rounded
-              source={profilePictureSource}
-              size="xlarge"
-              containerStyle={{
-                borderWidth: 3,
-                borderColor: '#383899',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-                elevation: 5,
-                borderRadius: 100,
-                marginBottom: 10,
-                overflow: 'hidden',
-                marginTop: -80,
-                marginBottom: 10,
-                marginLeft: 85,
-              }}
-            />
-            <Text style={styles.trainerProfileName}>{trainer.full_name}</Text>
-            {dynamicInfo}
-          </View>
+      <View style={styles.container}>
+        <View style={styles.trainerProfileCard}>
+          <Avatar
+            rounded
+            source={profilePictureSource}
+            size="xlarge"
+            containerStyle={styles.avatarContainer}
+          />
+          <Text style={styles.trainerProfileName}>{trainer.full_name}</Text>
+          {dynamicInfo}
         </View>
+        {renderRenewButton()}
       </View>
     </ImageBackground>
   );
@@ -331,9 +376,6 @@ const AllTrainersScreen = () => {
   };
   
   
-  
-  
-  
   const handleAddTrainer = () => {
     // Implement logic to add a trainer
     // ...
@@ -345,8 +387,6 @@ const AllTrainersScreen = () => {
   const handleEditPress = () => {
     setShowButtons((prev) => !prev);
   };
-
-  
 
   return (
     <View style={[styles.container, { backgroundColor: '#1C1C73' }]}>
@@ -369,28 +409,55 @@ const AllTrainersScreen = () => {
 };
 
 const HomeScreen = () => {
-  const { loggedIn, setLoggedIn, username, setUsername, theme, toggleTheme } = useAuth();
+  const { loggedIn, setLoggedIn, username, setUsername, theme, toggleTheme, isStaff, setIsStaff, fullName, setFullName} = useAuth();
   const navigation = useNavigation();
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [imageLoadingError, setImageLoadingError] = useState(false);
+  const [trainersData, setTrainersData] = useState([]);
+  const trainersDataRef = useRef(trainersData);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://101.100.176.175/trainers_profile_data');
+        const data = await response.json();
 
+        if (data && data.trainers_profile_data) {
+          setTrainersData(data.trainers_profile_data);
+          
+        } else {
+          console.warn('No trainers data received from the server.');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []); // The empty dependency array ensures that this effect runs only once on mount
 
   useEffect(() => {
     const loadLoginState = async () => {
       try {
         const storedUsername = await AsyncStorage.getItem('username');
+
         if (storedUsername) {
           setUsername(storedUsername);
           setLoggedIn(true);
+        
         }
       } catch (error) {
         console.error('Error loading login state:', error);
       }
     };
+
     loadLoginState();
-  }, []);
+  }, []); // The empty dependency array ensures that this effect runs only once on mount
+
+  
+
   const handleLogin = async () => {
-    const apiUrl = 'http://101.100.176.175/login';  // Replace with the actual server URL
+    const apiUrl = 'http://101.100.176.175/login';
+
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -399,11 +466,17 @@ const HomeScreen = () => {
         },
         body: JSON.stringify({ username }),
       });
+
       const result = await response.json();
+
       if (result.success) {
         setLoggedIn(true);
+        setIsStaff(result.is_staff);  // Assuming setIsStaff is part of the useAuth context
+        setFullName(result.full_name);
         try {
           await AsyncStorage.setItem('username', username);
+          await AsyncStorage.setItem('fullname', result.full_name);
+          
         } catch (error) {
           console.error('Error saving login state:', error);
         }
@@ -425,17 +498,66 @@ const HomeScreen = () => {
     setLoggedIn(false);
     setUsername('');
   };
-  const handleCardPress = (pageName) => {
+
+  const fetchUpdatedData = async () => {
+    console.log('called')
+    try {
+      const response = await fetch('http://101.100.176.175/trainers_profile_data');
+      const data = await response.json();
+      setTrainersData(data.trainers_profile_data);
+      trainersDataRef.current = data.trainers_profile_data
+      console.log(data.trainers_profile_data[4].preferred_name);
+    } catch (error) {
+      console.error('Error fetching updated data:', error);
+    }
+  };
+
+  const handleCardPress = async (pageName) => {
+    
+    
     switch (pageName) {
       case 'School Assignments':
         navigation.navigate('SchoolAssignments');
         break;
-      case "All Trainers'":
-        navigation.navigate('AllTrainers');
+        case "All Trainers'":
+        case 'My Profile':
+            if (isStaff) {
+              navigation.navigate('AllTrainers');
+            } else {
+              // Check if the user's full name matches any trainer's full name
+              let fullName_
+              fullName_ = await AsyncStorage.getItem('fullname');
+              console.log('ref', trainersDataRef);
+              await fetchUpdatedData();
+              //trainersData
+
+              const matchingTrainer = trainersDataRef.current.find(
+                (trainerObject) => trainerObject.full_name === fullName_
+              );
+        
+              if (matchingTrainer) {
+                // If a matching trainer is found, navigate to the TrainerProfileScreen with the trainer object
+                navigation.navigate('TrainerProfile', { trainer: matchingTrainer });
+              } else {
+                console.log("Else triggered for case/switch: ", trainerObject.full_name, fullName_);
+                // Handle the case when the user is not a staff and their profile is not found
+                Alert.alert('Profile Not Found', 'Your profile is not found in the trainers data.');
+              }
+            }
+            break;
+
+        
+      case 'Schedule Activities':
+        navigation.navigate('ScheduleActivities');
+        break;
+      case 'Confirm Activity Completion':
+        navigation.navigate('ConfirmActivityCompletion');
         break;
       // Add cases for other pages as needed
     }
   };
+  
+  
   const renderCard = ({ item }) => (
     <TouchableOpacity onPress={() => handleCardPress(item.pageName)}>
       <View style={styles.cardContainer}>
@@ -447,16 +569,18 @@ const HomeScreen = () => {
               <Icon name="calendar" type="font-awesome" color={'white'} size={40} />
             ) : item.pageName === "All Trainers'" ? (
               <Icon name="users" type="font-awesome" color={'white'} size={40} />
+            ) : item.pageName === 'My Profile' ? (
+              <Icon name="user" type="font-awesome" color={'white'} size={40} />
             ) : (
               <Icon name="fact-check" type="material" color={'white'} size={50} />
             )}
-
           </View>
           <Text style={styles.cardLabel}>{item.pageName}</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
+  
   const data = [
     { id: '1', pageName: 'School Assignments' },
     { id: '2', pageName: "All Trainers'" },
@@ -464,6 +588,11 @@ const HomeScreen = () => {
     { id: '4', pageName: 'Confirm Activity Completion' },
     // Add more objects for additional pages
   ];
+
+  if (!isStaff) {
+    data[1] = {id: '2', pageName: "My Profile"}
+  }
+  
   const handleImageError = () => {
     setImageLoadingError(true);
     setBackgroundColor('#1C1C73'); // Set background color to red on image loading error
@@ -472,7 +601,7 @@ const HomeScreen = () => {
     <ThemeProvider theme={{ colors: { primary: '#428C8B', text: 'white', gold: '#FFDBB0', card: 'white' } }}>
       <ImageBackground
         source={imageLoadingError ? null : getBackgroundImage(theme)}
-        style={{ flex: 3, resizeMode: 'cover', justifyContent: 'center', backgroundColor }}
+        style={{ flex: 3, resizeMode: 'contain', justifyContent: 'center', backgroundColor }}
         onError={handleImageError}
       >
         <View style={styles.container}>
@@ -546,13 +675,13 @@ const HomeScreenHeaderRight = () => {
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    resizeMode: 'cover',  // Adjust resizeMode based on your design preference
+    resizeMode: 'contain',  
     justifyContent: 'center',
   },
   rectangleImage: {
-    width: '100%', // Adjust the width as needed
-    height: 100, // Adjust the height as needed
-    resizeMode: 'cover',
+    width: '100%', 
+    height: 100, 
+    resizeMode: 'contain',
     marginBottom: 20,
   },
   container: {
@@ -565,8 +694,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    width: windowWidth, // Set width based on window width
-    height: windowHeight, // Set height based on window height
+    width: windowWidth, 
+    height: windowHeight, 
   },
   centeredContainer: {
     flex: 1,
@@ -581,14 +710,14 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     alignItems: 'center',
-    paddingHorizontal: 20, // Add horizontal padding
-    marginTop: 20, // Add top margin
+    paddingHorizontal: 20, 
+    marginTop: 20, 
     marginLeft: -10
   },
   cardContainer: {
     margin: 10,
-    width: 120,  // Adjust the width to make the cards smaller
-    height: 160, // Adjust the height to make the cards smaller
+    width: 120,  
+    height: 160, 
     borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
@@ -602,15 +731,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   circle: {
-    width: 50,  // Adjust the width to make the mascot image smaller
-    height: 50, // Adjust the height to make the mascot image smaller
+    width: 50,  
+    height: 50, 
     borderRadius: 25,
     backgroundColor: '#1C1C73',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardLabel: {
-    fontSize: 14, // Adjust the font size to make the text smaller
+    fontSize: 14, 
     marginTop: 10,
     color: 'white',
     textAlign: 'center',
@@ -645,7 +774,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // Adjust the background color as needed
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', 
     borderRadius: 8,
     borderColor: 'white',
     borderRadius: 15,
@@ -664,7 +793,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1C1C73', // Magenta background
+    backgroundColor: '#1C1C73',
   },
   trainerAvatar: {
     width: 200,
@@ -675,7 +804,7 @@ const styles = StyleSheet.create({
   },
   trainerCardLabel: {
     fontSize: 18,
-    color: 'white', // Trainers' Profile text
+    color: 'white', 
     fontWeight: 'bold',
   },
   trainerProfileLabel: {
@@ -684,7 +813,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   trainerProfileCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // trainer card bg color
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', 
     padding: 20,
     borderRadius: 15,
     marginBottom: 20,
@@ -702,7 +831,7 @@ const styles = StyleSheet.create({
   },
   trainerProfileName: {
     fontSize: 24,
-    color: 'white', // trainer profile text color
+    color: 'white', 
     fontWeight: 'bold',
   },
   trainerProfileInfo: {
@@ -711,14 +840,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   listItemContainer: {
-    width: 250, // Set to '100%' to take up the full width
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // color for trainer profile card
-    flexDirection: 'column', // Set to 'row' to display items horizontally
-    alignItems: 'center', // Center items vertically
-    borderBottomWidth: 2, // Add a border for separation
-    borderBottomColor: 'white', // Border color
-    paddingHorizontal: 15, // Add horizontal padding
-    marginBottom: 10, // Add bottom margin for separation
+    width: 250, 
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', 
+    flexDirection: 'column', 
+    alignItems: 'center', 
+    borderBottomWidth: 2, 
+    borderBottomColor: 'white', 
+    paddingHorizontal: 15, 
+    marginBottom: 10, 
     borderColor: 'white',
     borderRadius: 15,
     borderWidth: 2,
@@ -726,11 +855,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
   listItemTitle: {
-    flex: 1, // Allow the title to take up remaining space
-    marginLeft: 10, // Add left margin for separation from the avatar
+    flex: 1, 
+    marginLeft: 10, 
   },
   columnWrapper: {
-    justifyContent: 'space-between', // Adjust the alignment of columns
+    justifyContent: 'space-between', 
   },
   container: {
     flex: 1,
@@ -763,7 +892,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   assignmentLabel: {
-    color: 'white', // Set the color to white
+    color: 'white', 
     fontSize: 18,
     fontWeight: 'bold'
   },
@@ -831,9 +960,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 20, // Adjust the bottom value to push the button further down
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  
+  squareButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+  },
+  renewButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  profileCardContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  trainerDetailContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
 });
 
 const App = () => {
+  
   return (
     <AuthProvider>
       <NavigationContainer>
@@ -901,3 +1057,4 @@ const App = () => {
 };
 
 export default App;
+

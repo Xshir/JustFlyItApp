@@ -6,19 +6,22 @@
     <title>Database Admin Page</title>
     <style>
         body {
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
+            background-color: #282c35;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
         }
 
         h1, h2 {
             margin: 10px;
+            color: #61dafb;
+            text-align: center; /* Center align the titles */
         }
 
         h1 {
@@ -33,68 +36,234 @@
             border-collapse: collapse;
             width: 80%;
             margin-top: 20px;
-            background-color: #001f3f;
+            background-color: #61dafb;
+            border: 2px solid #282c35;
+            border-radius: 8px;
+            overflow: hidden;
+            color: #282c35; /* Text color for table content */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         th, td {
-            border: 1px solid white;
-            padding: 8px;
+            border: 1px solid #282c35;
+            padding: 12px;
             text-align: left;
+            background-color: #61dafb;
         }
 
         th {
-            background-color: #444444;
-            color: white;
+            background-color: #282c35;
+            color: #ffffff;
         }
 
         /* Style for header cells */
         th {
-            background-color: #FFD700;
-            color: #222222; /* Dark text on gold background */
+            background-color: #61dafb;
+            color: #282c35;
         }
 
         /* Additional style for title case text */
         .titlecase {
             text-transform: capitalize;
         }
+
+        /* Style for the login form */
+        #loginForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+            background-color: #61dafb;
+            border: 2px solid #282c35;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #loginForm label, #loginForm input, #loginForm button {
+            margin-bottom: 10px;
+            width: 100%;
+            color: #333; /* Dark grey text for better readability */
+        }
+
+        #loginForm button {
+            background-color: #61dafb;
+            color: #282c35;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #loginForm button:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Style for the toggle switch */
+        .toggle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px; /* Add some top margin for spacing */
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .toggle-label {
+            color: #61dafb;
+            margin-bottom: 5px; /* Add margin-bottom for spacing */
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+            transition: 0.4s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #61dafb;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 <body>
-    <h1>Database Admin Page</h1>
-    
-    <label for="titleCaseSlider">Toggle Title Case:</label>
-    <input type="range" min="0" max="1" value="0" class="slider" id="titleCaseSlider">
-
-    {% for table_name, table_data in tables.items() %}
-        <h2>{{ table_name|replace('_', ' ')|title }}</h2>
-        <table id="{{ 'table-' + loop.index|string }}">
-            <tr>
-                {% for column_name in table_data[0].keys() %}
-                    <th class="{{ 'titlecase-' + loop.index|string }}">{{ column_name|replace('_', ' ') }}</th>
-                {% endfor %}
-            </tr>
-            {% for row in table_data %}
-                <tr>
-                    {% for value in row.values() %}
-                        <td>{{ value }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
-    {% endfor %}
-
     <script>
-        document.getElementById('titleCaseSlider').addEventListener('input', function() {
-            var titleCase = this.value == 1;
+        function toggleTitleCase() {
+            var titleCase = document.getElementById('titleCaseToggle').checked;
             var tables = document.querySelectorAll('table');
-            
-            tables.forEach(function(table) {
+    
+            tables.forEach(function (table) {
                 var headers = table.querySelectorAll('th');
-                headers.forEach(function(header) {
+                headers.forEach(function (header) {
                     header.classList.toggle('titlecase', titleCase);
                 });
             });
-        });
+    
+            // Store the toggle state in sessionStorage
+            sessionStorage.setItem('titleCaseToggleState', titleCase ? 'true' : 'false');
+        }
+    
+        function checkLogin() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+    
+            // Perform your authentication logic here
+            // For simplicity, let's assume a hardcoded username and password
+            if (username === 'JFI' && password === 'JFI123') {
+                // Successful login, store the login state in sessionStorage
+                sessionStorage.setItem('loggedIn', 'true');
+    
+                // Hide the login form and show the content
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } else {
+                // Failed login, you can display an error message or take other actions
+                alert('Invalid username or password. Please try again.');
+            }
+        }
+    
+        // Check the login state and toggle button state on page load
+        window.onload = function () {
+            var loggedIn = sessionStorage.getItem('loggedIn');
+            if (loggedIn === 'true') {
+                // If logged in, hide the login form and show the content
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            }
+    
+            // Retrieve the toggle button state from sessionStorage
+            var titleCaseToggleState = sessionStorage.getItem('titleCaseToggleState');
+            if (titleCaseToggleState === 'true') {
+                // If toggle button was checked, set it to checked
+                document.getElementById('titleCaseToggle').checked = true;
+                // Apply the title case immediately on page load
+                toggleTitleCase();
+            }
+        };
     </script>
+    
+    
+
+    <div id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username">
+
+        <label for="password">Password:</label>
+        <input type="password" id="password">
+
+        <button onclick="checkLogin()">Login</button>
+    </div>
+
+    <div id="content" style="display: none;">
+        <!-- Add a new div for the centered title -->
+        <div id="pageTitle">
+            <h1>Database Admin Page</h1>
+        </div>
+
+        <!-- Toggle switch for title case -->
+        <div class="toggle-container">
+            <!-- Add a new div for the centered toggle label -->
+            <div id="toggleLabel">
+                <span class="toggle-label">Toggle Title Case:</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="titleCaseToggle" onclick="toggleTitleCase()">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        {% for table_name, table_data in tables.items() %}
+            <!-- Add a new div for the centered table name -->
+            <div style="text-align: center; margin-top: 10px;">
+                <h2>{{ table_name|replace('_', ' ')|title }}</h2>
+            </div>
+            <table id="{{ 'table-' + loop.index|string }}">
+                <tr>
+                    {% for column_name in table_data[0].keys() %}
+                        <th class="{{ 'titlecase-' + loop.index|string }}">{{ column_name|replace('_', ' ') }}</th>
+                    {% endfor %}
+                </tr>
+                {% for row in table_data %}
+                    <tr>
+                        {% for value in row.values() %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    </div>
 </body>
 </html>
