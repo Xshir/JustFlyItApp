@@ -607,7 +607,7 @@ const HomeScreen = () => {
         <View style={styles.container}>
           <View style={styles.centeredContainer}>
             <Image
-              source={require('./JFITransparent.png')}
+              source={require('./assets/JFITransparent.png')}
               style={{ width: 170, height: 170, alignSelf: 'center', resizeMode: 'contain', marginBottom: 10 }}
             />
             {loggedIn ? (
